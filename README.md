@@ -4,16 +4,16 @@ Low-fidelity, click-through wireframe for organizing a game backlog. The categor
 
 ## Two views of the same 25 blocks
 
-| View | Level 1 | Level 2 | Leaf |
+| View | Categories | Filters (checkboxes) | Leaf |
 |---|---|---|---|
-| By Genre | Competitive Multiplayer, Racing, Action & Adventure, Build & Strategize | Singleplayer, Multiplayer | Game placeholder page |
-| By How You Play | Singleplayer, Online Multiplayer, Couch & Local | Family-Friendly, Mature | Game placeholder page |
+| By Genre | Competitive Multiplayer, Racing, Action & Adventure, Build & Strategize | Players (Singleplayer, Multiplayer); Audience (Family-Friendly, Mature) | Game placeholder page |
+| By How You Play | Singleplayer, Online Multiplayer, Couch & Local | Genre (the four genres); Audience (Family-Friendly, Mature) | Game placeholder page |
 
-The home page shows both views as sections, each listing its level-1 categories. All 25 games can be reached in both views. Subcategories with no games are hidden.
+The home page shows both views as sections. Each category opens a list of its games, with filters on the left. Within a group, checked filters are combined with OR; across groups, with AND. Filters are saved in the URL, so Back from a game page keeps them, and opening a different category starts with no filters. All 25 games can be reached in both views.
 
 ## Click log
 
-Navigation clicks (home, breadcrumbs, categories, games, back) are recorded in the browser's localStorage for tree testing. Clicks on the log controls themselves are not recorded. Use the footer buttons to download the log as JSON or CSV, copy it as JSON, show it, or clear it.
+Navigation clicks (home, breadcrumbs, categories, games, back) and filter checkbox changes (logged as on/off) are recorded in the browser's localStorage for tree testing. Clicks on the log controls themselves are not recorded. Use the footer buttons to download the log as JSON or CSV, copy it as JSON, show it, or clear it.
 
 ## Run locally
 

@@ -18,6 +18,11 @@
   .placeholder { border: 1px dashed #000; padding: 32px 12px; text-align: center; margin-bottom: 12px; }
   .spacer { flex: 1; }
   textarea { width: 100%; height: 160px; border: 1px solid #000; padding: 8px; font-family: Arial, sans-serif; }
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 12px; align-items: start; }
+  .layout aside { margin: 0; }
+  fieldset { border: 1px solid #000; padding: 8px; margin-bottom: 12px; }
+  fieldset label { display: block; padding: 4px 0; cursor: pointer; }
+  @media (max-width: 600px) { .layout { grid-template-columns: 1fr; } }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -47,74 +52,98 @@
 <script>
 /* ---------- Information blocks (the 25 card-sort cards) ----------
    genre:    one of the four report categories
-   genreSub: Singleplayer / Multiplayer filter under each genre (View 1, level 2)
-   play:     play situation (View 2, level 1)
-   audience: Family-Friendly / Mature (View 2, level 2)                      */
+   players:  Singleplayer / Multiplayer (filter in the Genre view)
+   play:     play situation (How You Play view categories)
+   audience: Family-Friendly / Mature (filter in both views)                      */
 const GAMES = [
   // Competitive Multiplayer
-  { name: "Counter-Strike 2",            genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "mature" },
-  { name: "Team Fortress 2",             genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "mature" },
-  { name: "Fortnite",                    genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "family" },
-  { name: "Halo Infinite",               genre: "competitive", genreSub: ["single", "multi"], play: ["single", "online"],         audience: "mature" },
-  { name: "League of Legends",           genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "family" },
-  { name: "Marvel Rivals",               genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "family" },
-  { name: "Super Smash Bros. Ultimate",  genre: "competitive", genreSub: ["multi"],           play: ["local"],                    audience: "family" },
+  { name: "Counter-Strike 2",            genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "mature" },
+  { name: "Team Fortress 2",             genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "mature" },
+  { name: "Fortnite",                    genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "family" },
+  { name: "Halo Infinite",               genre: "competitive", players:  ["single", "multi"], play: ["single", "online"],         audience: "mature" },
+  { name: "League of Legends",           genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "family" },
+  { name: "Marvel Rivals",               genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "family" },
+  { name: "Super Smash Bros. Ultimate",  genre: "competitive", players:  ["multi"],           play: ["local"],                    audience: "family" },
   // Racing
-  { name: "Forza Horizon 5",             genre: "racing",      genreSub: ["single"],          play: ["single"],                   audience: "family" },
-  { name: "Gran Turismo 7",              genre: "racing",      genreSub: ["single"],          play: ["single"],                   audience: "family" },
-  { name: "Mario Kart 8 Deluxe",         genre: "racing",      genreSub: ["multi"],           play: ["local"],                    audience: "family" },
+  { name: "Forza Horizon 5",             genre: "racing",      players:  ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Gran Turismo 7",              genre: "racing",      players:  ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Mario Kart 8 Deluxe",         genre: "racing",      players:  ["multi"],           play: ["local"],                    audience: "family" },
   // Action & Adventure
-  { name: "Final Fantasy VII Rebirth",   genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
-  { name: "Marvel's Spider-Man 2",       genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
-  { name: "The Legend of Zelda: Tears of the Kingdom", genre: "action", genreSub: ["single"], play: ["single"],                   audience: "family" },
-  { name: "Ratchet & Clank",             genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "family" },
-  { name: "Baldur's Gate 3",             genre: "action",      genreSub: ["single", "multi"], play: ["single"],                   audience: "mature" },
-  { name: "Hollow Knight: Silksong",     genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "family" },
-  { name: "Elden Ring",                  genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
-  { name: "Monster Hunter Wilds",        genre: "action",      genreSub: ["single", "multi"], play: ["single", "online"],         audience: "mature" },
-  { name: "God of War",                  genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
-  { name: "Grand Theft Auto V",          genre: "action",      genreSub: ["single", "multi"], play: ["single", "online"],         audience: "mature" },
-  { name: "Super Mario Odyssey",         genre: "action",      genreSub: ["single", "multi"], play: ["single", "local"],          audience: "family" },
-  { name: "Cyberpunk 2077",              genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "Final Fantasy VII Rebirth",   genre: "action",      players:  ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "Marvel's Spider-Man 2",       genre: "action",      players:  ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "The Legend of Zelda: Tears of the Kingdom", genre: "action", players:  ["single"], play: ["single"],                   audience: "family" },
+  { name: "Ratchet & Clank",             genre: "action",      players:  ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Baldur's Gate 3",             genre: "action",      players:  ["single", "multi"], play: ["single"],                   audience: "mature" },
+  { name: "Hollow Knight: Silksong",     genre: "action",      players:  ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Elden Ring",                  genre: "action",      players:  ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "Monster Hunter Wilds",        genre: "action",      players:  ["single", "multi"], play: ["single", "online"],         audience: "mature" },
+  { name: "God of War",                  genre: "action",      players:  ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "Grand Theft Auto V",          genre: "action",      players:  ["single", "multi"], play: ["single", "online"],         audience: "mature" },
+  { name: "Super Mario Odyssey",         genre: "action",      players:  ["single", "multi"], play: ["single", "local"],          audience: "family" },
+  { name: "Cyberpunk 2077",              genre: "action",      players:  ["single"],          play: ["single"],                   audience: "mature" },
   // Build & Strategize
-  { name: "Minecraft",                   genre: "build",       genreSub: ["single", "multi"], play: ["single", "online"],         audience: "family" },
-  { name: "Civilization VII",            genre: "build",       genreSub: ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
-  { name: "Animal Crossing",             genre: "build",       genreSub: ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Minecraft",                   genre: "build",       players:  ["single", "multi"], play: ["single", "online"],         audience: "family" },
+  { name: "Civilization VII",            genre: "build",       players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
+  { name: "Animal Crossing",             genre: "build",       players:  ["single"],          play: ["single"],                   audience: "family" },
 ].map(g => ({ ...g, id: g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") }));
 
-/* ---------- Two categorizations over the same blocks ---------- */
+/* ---------- Two categorizations over the same blocks ----------
+   Each view has one level of categories; everything else is a checkbox
+   filter on the category's game list (OR within a group, AND across).   */
+const AUDIENCE = {
+  label: "Audience",
+  options: [
+    { id: "family", label: "Family-Friendly", test: g => g.audience === "family" },
+    { id: "mature", label: "Mature",          test: g => g.audience === "mature" },
+  ],
+};
+const GENRES = [
+  { id: "competitive", label: "Competitive Multiplayer" },
+  { id: "racing",      label: "Racing" },
+  { id: "action",      label: "Action & Adventure" },
+  { id: "build",       label: "Build & Strategize" },
+];
+
 const VIEWS = {
   genre: {
     label: "By Genre",
-    level1: [
-      { id: "competitive", label: "Competitive Multiplayer" },
-      { id: "racing",      label: "Racing" },
-      { id: "action",      label: "Action & Adventure" },
-      { id: "build",       label: "Build & Strategize" },
+    categories: GENRES,
+    inCategory: (g, c) => g.genre === c,
+    filters: [
+      {
+        label: "Players",
+        options: [
+          { id: "single", label: "Singleplayer", test: g => g.players.includes("single") },
+          { id: "multi",  label: "Multiplayer",  test: g => g.players.includes("multi") },
+        ],
+      },
+      AUDIENCE,
     ],
-    level2: [
-      { id: "single", label: "Singleplayer" },
-      { id: "multi",  label: "Multiplayer" },
-    ],
-    match: (g, l1, l2) => g.genre === l1 && g.genreSub.includes(l2),
   },
   play: {
     label: "By How You Play",
-    level1: [
+    categories: [
       { id: "single", label: "Singleplayer" },
       { id: "online", label: "Online Multiplayer" },
       { id: "local",  label: "Couch & Local" },
     ],
-    level2: [
-      { id: "family", label: "Family-Friendly" },
-      { id: "mature", label: "Mature" },
+    inCategory: (g, c) => g.play.includes(c),
+    filters: [
+      { label: "Genre", options: GENRES.map(c => ({ ...c, test: g => g.genre === c.id })) },
+      AUDIENCE,
     ],
-    match: (g, l1, l2) => g.play.includes(l1) && g.audience === l2,
   },
 };
 
 const byId = (list, id) => list.find(x => x.id === id);
-const gamesIn = (view, l1, l2) => GAMES.filter(g => VIEWS[view].match(g, l1, l2));
+
+function gamesIn(view, cat, active) {
+  const V = VIEWS[view];
+  return GAMES.filter(g => V.inCategory(g, cat) && V.filters.every(group => {
+    const on = group.options.filter(o => active.has(o.id));
+    return !on.length || on.some(o => o.test(g));
+  }));
+}
 
 /* ---------- Click log ---------- */
 const LOG_KEY = "steam-backlog-click-log";
@@ -128,16 +157,16 @@ function saveLog() {
   document.getElementById("log-text").value = JSON.stringify(log, null, 2);
 }
 
-function record(label, el) {
+function record(label, type, to) {
   const route = parseRoute();
   log.push({
     seq: log.length + 1,
     session: SESSION,
     time: new Date().toISOString(),
     label,
-    type: el.dataset.type || "control",
+    type,
     from: location.hash || "#/",
-    to: el.dataset.route || "",
+    to,
     view: route.view || "",
     depth: route.parts.length,
   });
@@ -159,77 +188,96 @@ function toCSV(rows) {
 }
 
 /* ---------- Routing / rendering ----------
-   #/                         home
-   #/<view>                   level 1 categories
-   #/<view>/<l1>              level 2 subcategories
-   #/<view>/<l1>/<l2>         games (blocks)
-   #/<view>/<l1>/<l2>/<game>  leaf placeholder page                         */
+   #/                            home: both views and their categories
+   #/<view>/<cat>?f=a,b          filterable game list for a category
+   #/<view>/<cat>/<game>?f=a,b   leaf placeholder page (keeps filters for Back) */
 function parseRoute() {
-  const parts = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
-  return { parts, view: VIEWS[parts[0]] ? parts[0] : null };
+  const [path, query = ""] = location.hash.replace(/^#\/?/, "").split("?");
+  const parts = path.split("/").filter(Boolean);
+  const f = new URLSearchParams(query).get("f");
+  return { parts, view: VIEWS[parts[0]] ? parts[0] : null, active: new Set(f ? f.split(",") : []) };
 }
+
+function routeTo(path, active) {
+  return `#/${path}` + (active && active.size ? `?f=${[...active].join(",")}` : "");
+}
+
+const esc = s => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 
 function btn(label, route, type) {
-  return `<button data-log="${label.replace(/"/g, "&quot;")}" data-route="${route}" data-type="${type}">${label}</button>`;
+  return `<button data-log="${esc(label)}" data-route="${route}" data-type="${type}">${esc(label)}</button>`;
 }
 
-function render() {
-  const { parts, view } = parseRoute();
+function render(keepScroll) {
+  const { parts, view, active } = parseRoute();
   const main = document.getElementById("main");
   const crumbs = [["Home", "#/"]];
   let html = "";
 
-  const [, l1id, l2id, gameId] = parts;
-  const l1 = view && l1id && byId(VIEWS[view].level1, l1id);
+  const [, catId, gameId] = parts;
+  const cat = view && catId && byId(VIEWS[view].categories, catId);
 
   // Home (and any route without a valid category) shows both views as sections.
-  if (!l1) {
+  if (!cat) {
     html = `<p>Find a game in your backlog.</p><br>` + Object.entries(VIEWS).map(([id, V]) =>
       `<section class="box"><p>${V.label}</p><br>
-        <div class="grid">${V.level1.map(c => btn(c.label, `#/${id}/${c.id}`, "category-1")).join("")}</div>
+        <div class="grid">${V.categories.map(c => btn(c.label, routeTo(`${id}/${c.id}`), "category")).join("")}</div>
       </section>`).join("");
   } else {
     const V = VIEWS[view];
-    const l2 = l2id && byId(V.level2, l2id);
-    const game = gameId && GAMES.find(g => g.id === gameId);
-    crumbs.push([V.label, null]);
-    if (l1) crumbs.push([l1.label, `#/${view}/${l1.id}`]);
-    if (l1 && l2) crumbs.push([l2.label, `#/${view}/${l1.id}/${l2.id}`]);
+    const listRoute = routeTo(`${view}/${cat.id}`, active);
+    const game = gameId && GAMES.find(g => g.id === gameId && V.inCategory(g, cat.id));
+    crumbs.push([V.label, null], [cat.label, listRoute]);
 
-    if (game && l1 && l2) {
-      crumbs.push([game.name, location.hash]);
-      html = `<p>Game page: ${game.name}</p><br>
-        <div class="placeholder">[ Placeholder page for: ${game.name} ]</div>
-        <p>You reached this block via: ${crumbs.slice(1).map(c => c[0]).join(" &gt; ")}</p><br>
+    if (game) {
+      crumbs.push([game.name, null]);
+      html = `<p>Game page: ${esc(game.name)}</p><br>
+        <div class="placeholder">[ Placeholder page for: ${esc(game.name)} ]</div>
+        <p>You reached this block via: ${crumbs.slice(1).map(c => esc(c[0])).join(" &gt; ")}</p><br>
         <div class="placeholder">[ Game details placeholder ]</div>
-        ${btn("Back to " + l2.label, `#/${view}/${l1.id}/${l2.id}`, "back")}`;
-    } else if (l1 && l2) {
-      const list = gamesIn(view, l1.id, l2.id);
-      html = `<p>${l1.label} &gt; ${l2.label}: ${list.length} games</p><br>
-        <div class="grid">${list.map(g => btn(g.name, `#/${view}/${l1.id}/${l2.id}/${g.id}`, "game")).join("")}</div>`;
+        ${btn("Back to " + cat.label, listRoute, "back")}`;
     } else {
-      // Only show subcategories that contain at least one block.
-      const subs = V.level2.filter(s => gamesIn(view, l1.id, s.id).length);
-      html = `<p>${l1.label}: choose one</p><br>
-        <div class="grid">${subs.map(s => btn(`${s.label} (${gamesIn(view, l1.id, s.id).length})`, `#/${view}/${l1.id}/${s.id}`, "category-2")).join("")}</div>`;
+      const list = gamesIn(view, cat.id, active);
+      const filters = V.filters.map(group => `<fieldset><legend>${group.label}</legend>
+        ${group.options.map(o => `<label><input type="checkbox" data-log="Filter: ${esc(o.label)}" data-type="filter"
+          data-filter="${o.id}"${active.has(o.id) ? " checked" : ""}> ${esc(o.label)}</label>`).join("")}
+        </fieldset>`).join("");
+      html = `<div class="layout">
+        <aside class="box" aria-label="Filters"><p>Filter</p><br>${filters}</aside>
+        <div><p>${esc(cat.label)}: ${list.length} games</p><br>
+          ${list.length
+            ? `<div class="grid">${list.map(g => btn(g.name, routeTo(`${view}/${cat.id}/${g.id}`, active), "game")).join("")}</div>`
+            : `<div class="placeholder">No games match these filters.</div>`}
+        </div></div>`;
     }
   }
 
   main.innerHTML = html;
   document.getElementById("crumbs").innerHTML = crumbs
     .map(([label, route], i) => i === crumbs.length - 1 || !route
-      ? `<span>${label}</span>${i === crumbs.length - 1 ? "" : "<span>&gt;</span>"}`
-      : `<button data-log="Breadcrumb: ${label.replace(/"/g, "&quot;")}" data-route="${route}" data-type="breadcrumb">${label}</button><span>&gt;</span>`)
+      ? `<span>${esc(label)}</span>${i === crumbs.length - 1 ? "" : "<span>&gt;</span>"}`
+      : `<button data-log="Breadcrumb: ${esc(label)}" data-route="${route}" data-type="breadcrumb">${esc(label)}</button><span>&gt;</span>`)
     .join("");
-  window.scrollTo(0, 0);
+  if (!keepScroll) window.scrollTo(0, 0);
 }
 
-/* One listener records every click on a labeled control, then navigates. */
+/* One listener records every navigation or filter click. Filter changes
+   replace the current history entry so the browser Back button still
+   goes to the previous page, not the previous filter state. */
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-log]");
   if (!el) return;
-  record(el.dataset.log, el);
-  if (el.dataset.route) location.hash = el.dataset.route;
+  if (el.dataset.type === "filter") {
+    const { parts, active } = parseRoute();
+    el.checked ? active.add(el.dataset.filter) : active.delete(el.dataset.filter);
+    const to = routeTo(parts.join("/"), active);
+    record(`${el.dataset.log} (${el.checked ? "on" : "off"})`, "filter", to);
+    history.replaceState(null, "", to);
+    render(true);
+    return;
+  }
+  record(el.dataset.log, el.dataset.type, el.dataset.route);
+  location.hash = el.dataset.route;
 });
 
 document.getElementById("dl-json").onclick = () => download("click-log.json", JSON.stringify(log, null, 2), "application/json");
