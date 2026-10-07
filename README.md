@@ -1,4 +1,4 @@
-# steam-backlog
+# Video Game Finder
 
 Low-fidelity, click-through wireframe for organizing a game backlog. The categories and labels come from our card sort (8 participants, 25 cards).
 
