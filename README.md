@@ -9,11 +9,11 @@ Low-fidelity, click-through wireframe for organizing a game backlog. The categor
 | By Genre | Competitive Multiplayer, Racing, Action & Adventure, Build & Strategize | Singleplayer, Multiplayer | Game placeholder page |
 | By How You Play | Singleplayer, Online Multiplayer, Couch & Local | Family-Friendly, Mature | Game placeholder page |
 
-All 25 games can be reached in both views. Subcategories with no games are hidden.
+The home page shows both views as sections, each listing its level-1 categories. All 25 games can be reached in both views. Subcategories with no games are hidden.
 
 ## Click log
 
-Every click on the site is recorded in the browser's localStorage. Use the footer buttons to download the log as JSON or CSV, copy it as JSON, show it, or clear it.
+Navigation clicks (home, breadcrumbs, categories, games, back) are recorded in the browser's localStorage for tree testing. Clicks on the log controls themselves are not recorded. Use the footer buttons to download the log as JSON or CSV, copy it as JSON, show it, or clear it.
 
 ## Run locally
 

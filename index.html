@@ -25,9 +25,6 @@
 
 <header class="box">
   <button data-log="Home" data-route="#/">Steam Backlog</button>
-  <span class="spacer"></span>
-  <button data-log="Nav: By Genre" data-route="#/genre">By Genre</button>
-  <button data-log="Nav: By How You Play" data-route="#/play">By How You Play</button>
 </header>
 
 <nav class="box crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
@@ -37,11 +34,11 @@
 <footer class="box">
   <span>Click log: <span id="log-count">0</span> clicks</span>
   <span class="spacer"></span>
-  <button data-log="Log: Download JSON" id="dl-json">Download JSON</button>
-  <button data-log="Log: Download CSV" id="dl-csv">Download CSV</button>
-  <button data-log="Log: Copy JSON" id="copy-json">Copy JSON</button>
-  <button data-log="Log: Show/Hide" id="toggle-log">Show log</button>
-  <button data-log="Log: Clear" id="clear-log">Clear log</button>
+  <button id="dl-json">Download JSON</button>
+  <button id="dl-csv">Download CSV</button>
+  <button id="copy-json">Copy JSON</button>
+  <button id="toggle-log">Show log</button>
+  <button id="clear-log">Clear log</button>
 </footer>
 <section class="box" id="log-panel" hidden>
   <textarea id="log-text" readonly aria-label="Click log JSON"></textarea>
@@ -182,16 +179,20 @@ function render() {
   const crumbs = [["Home", "#/"]];
   let html = "";
 
-  if (!view) {
-    html = `<p>Find a game in your backlog. Choose a way to browse:</p><br>
-      <div class="grid">${btn("By Genre", "#/genre", "view")}${btn("By How You Play", "#/play", "view")}</div>`;
+  const [, l1id, l2id, gameId] = parts;
+  const l1 = view && l1id && byId(VIEWS[view].level1, l1id);
+
+  // Home (and any route without a valid category) shows both views as sections.
+  if (!l1) {
+    html = `<p>Find a game in your backlog.</p><br>` + Object.entries(VIEWS).map(([id, V]) =>
+      `<section class="box"><p>${V.label}</p><br>
+        <div class="grid">${V.level1.map(c => btn(c.label, `#/${id}/${c.id}`, "category-1")).join("")}</div>
+      </section>`).join("");
   } else {
     const V = VIEWS[view];
-    const [, l1id, l2id, gameId] = parts;
-    const l1 = l1id && byId(V.level1, l1id);
     const l2 = l2id && byId(V.level2, l2id);
     const game = gameId && GAMES.find(g => g.id === gameId);
-    crumbs.push([V.label, `#/${view}`]);
+    crumbs.push([V.label, null]);
     if (l1) crumbs.push([l1.label, `#/${view}/${l1.id}`]);
     if (l1 && l2) crumbs.push([l2.label, `#/${view}/${l1.id}/${l2.id}`]);
 
@@ -206,21 +207,18 @@ function render() {
       const list = gamesIn(view, l1.id, l2.id);
       html = `<p>${l1.label} &gt; ${l2.label}: ${list.length} games</p><br>
         <div class="grid">${list.map(g => btn(g.name, `#/${view}/${l1.id}/${l2.id}/${g.id}`, "game")).join("")}</div>`;
-    } else if (l1) {
+    } else {
       // Only show subcategories that contain at least one block.
       const subs = V.level2.filter(s => gamesIn(view, l1.id, s.id).length);
       html = `<p>${l1.label}: choose one</p><br>
         <div class="grid">${subs.map(s => btn(`${s.label} (${gamesIn(view, l1.id, s.id).length})`, `#/${view}/${l1.id}/${s.id}`, "category-2")).join("")}</div>`;
-    } else {
-      html = `<p>${V.label}: choose a category</p><br>
-        <div class="grid">${V.level1.map(c => btn(c.label, `#/${view}/${c.id}`, "category-1")).join("")}</div>`;
     }
   }
 
   main.innerHTML = html;
   document.getElementById("crumbs").innerHTML = crumbs
-    .map(([label, route], i) => i === crumbs.length - 1
-      ? `<span>${label}</span>`
+    .map(([label, route], i) => i === crumbs.length - 1 || !route
+      ? `<span>${label}</span>${i === crumbs.length - 1 ? "" : "<span>&gt;</span>"}`
       : `<button data-log="Breadcrumb: ${label.replace(/"/g, "&quot;")}" data-route="${route}" data-type="breadcrumb">${label}</button><span>&gt;</span>`)
     .join("");
   window.scrollTo(0, 0);
