@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Steam Backlog Wireframe</title>
+<style>
+  /* Wireframe fidelity: black and white, one font, one size, generic boxes. */
+  * { box-sizing: border-box; margin: 0; padding: 0; font: 16px/1.4 Arial, sans-serif; color: #000; }
+  body { background: #fff; padding: 16px; max-width: 900px; margin: 0 auto; }
+  button { background: #fff; border: 1px solid #000; padding: 8px 12px; cursor: pointer; text-align: left; }
+  .box { border: 1px solid #000; padding: 12px; margin-bottom: 12px; }
+  header.box, footer.box { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .crumbs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .crumbs button { padding: 4px 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .grid button { min-height: 72px; width: 100%; }
+  .placeholder { border: 1px dashed #000; padding: 32px 12px; text-align: center; margin-bottom: 12px; }
+  .spacer { flex: 1; }
+  textarea { width: 100%; height: 160px; border: 1px solid #000; padding: 8px; font-family: Arial, sans-serif; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="box">
+  <button data-log="Home" data-route="#/">Steam Backlog</button>
+  <span class="spacer"></span>
+  <button data-log="Nav: By Genre" data-route="#/genre">By Genre</button>
+  <button data-log="Nav: By How You Play" data-route="#/play">By How You Play</button>
+</header>
+
+<nav class="box crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+
+<main class="box" id="main"></main>
+
+<footer class="box">
+  <span>Click log: <span id="log-count">0</span> clicks</span>
+  <span class="spacer"></span>
+  <button data-log="Log: Download JSON" id="dl-json">Download JSON</button>
+  <button data-log="Log: Download CSV" id="dl-csv">Download CSV</button>
+  <button data-log="Log: Copy JSON" id="copy-json">Copy JSON</button>
+  <button data-log="Log: Show/Hide" id="toggle-log">Show log</button>
+  <button data-log="Log: Clear" id="clear-log">Clear log</button>
+</footer>
+<section class="box" id="log-panel" hidden>
+  <textarea id="log-text" readonly aria-label="Click log JSON"></textarea>
+</section>
+
+<script>
+/* ---------- Information blocks (the 25 card-sort cards) ----------
+   genre:    one of the four report categories
+   genreSub: Singleplayer / Multiplayer filter under each genre (View 1, level 2)
+   play:     play situation (View 2, level 1)
+   audience: Family-Friendly / Mature (View 2, level 2)                      */
+const GAMES = [
+  // Competitive Multiplayer
+  { name: "Counter-Strike 2",            genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "mature" },
+  { name: "Team Fortress 2",             genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "mature" },
+  { name: "Fortnite",                    genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "family" },
+  { name: "Halo Infinite",               genre: "competitive", genreSub: ["single", "multi"], play: ["single", "online"],         audience: "mature" },
+  { name: "League of Legends",           genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "family" },
+  { name: "Marvel Rivals",               genre: "competitive", genreSub: ["multi"],           play: ["online"],                   audience: "family" },
+  { name: "Super Smash Bros. Ultimate",  genre: "competitive", genreSub: ["multi"],           play: ["local"],                    audience: "family" },
+  // Racing
+  { name: "Forza Horizon 5",             genre: "racing",      genreSub: ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Gran Turismo 7",              genre: "racing",      genreSub: ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Mario Kart 8 Deluxe",         genre: "racing",      genreSub: ["multi"],           play: ["local"],                    audience: "family" },
+  // Action & Adventure
+  { name: "Final Fantasy VII Rebirth",   genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "Marvel's Spider-Man 2",       genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "The Legend of Zelda: Tears of the Kingdom", genre: "action", genreSub: ["single"], play: ["single"],                   audience: "family" },
+  { name: "Ratchet & Clank",             genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Baldur's Gate 3",             genre: "action",      genreSub: ["single", "multi"], play: ["single"],                   audience: "mature" },
+  { name: "Hollow Knight: Silksong",     genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Elden Ring",                  genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "Monster Hunter Wilds",        genre: "action",      genreSub: ["single", "multi"], play: ["single", "online"],         audience: "mature" },
+  { name: "God of War",                  genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "Grand Theft Auto V",          genre: "action",      genreSub: ["single", "multi"], play: ["single", "online"],         audience: "mature" },
+  { name: "Super Mario Odyssey",         genre: "action",      genreSub: ["single", "multi"], play: ["single", "local"],          audience: "family" },
+  { name: "Cyberpunk 2077",              genre: "action",      genreSub: ["single"],          play: ["single"],                   audience: "mature" },
+  // Build & Strategize
+  { name: "Minecraft",                   genre: "build",       genreSub: ["single", "multi"], play: ["single", "online"],         audience: "family" },
+  { name: "Civilization VII",            genre: "build",       genreSub: ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
+  { name: "Animal Crossing",             genre: "build",       genreSub: ["single"],          play: ["single"],                   audience: "family" },
+].map(g => ({ ...g, id: g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") }));
+
+/* ---------- Two categorizations over the same blocks ---------- */
+const VIEWS = {
+  genre: {
+    label: "By Genre",
+    level1: [
+      { id: "competitive", label: "Competitive Multiplayer" },
+      { id: "racing",      label: "Racing" },
+      { id: "action",      label: "Action & Adventure" },
+      { id: "build",       label: "Build & Strategize" },
+    ],
+    level2: [
+      { id: "single", label: "Singleplayer" },
+      { id: "multi",  label: "Multiplayer" },
+    ],
+    match: (g, l1, l2) => g.genre === l1 && g.genreSub.includes(l2),
+  },
+  play: {
+    label: "By How You Play",
+    level1: [
+      { id: "single", label: "Singleplayer" },
+      { id: "online", label: "Online Multiplayer" },
+      { id: "local",  label: "Couch & Local" },
+    ],
+    level2: [
+      { id: "family", label: "Family-Friendly" },
+      { id: "mature", label: "Mature" },
+    ],
+    match: (g, l1, l2) => g.play.includes(l1) && g.audience === l2,
+  },
+};
+
+const byId = (list, id) => list.find(x => x.id === id);
+const gamesIn = (view, l1, l2) => GAMES.filter(g => VIEWS[view].match(g, l1, l2));
+
+/* ---------- Click log ---------- */
+const LOG_KEY = "steam-backlog-click-log";
+const SESSION = Date.now().toString(36);
+let log = [];
+try { log = JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch (e) { log = []; }
+
+function saveLog() {
+  try { localStorage.setItem(LOG_KEY, JSON.stringify(log)); } catch (e) {}
+  document.getElementById("log-count").textContent = log.length;
+  document.getElementById("log-text").value = JSON.stringify(log, null, 2);
+}
+
+function record(label, el) {
+  const route = parseRoute();
+  log.push({
+    seq: log.length + 1,
+    session: SESSION,
+    time: new Date().toISOString(),
+    label,
+    type: el.dataset.type || "control",
+    from: location.hash || "#/",
+    to: el.dataset.route || "",
+    view: route.view || "",
+    depth: route.parts.length,
+  });
+  saveLog();
+}
+
+function download(filename, text, mime) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: mime }));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function toCSV(rows) {
+  const cols = ["seq", "session", "time", "label", "type", "from", "to", "view", "depth"];
+  const esc = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  return [cols.join(","), ...rows.map(r => cols.map(c => esc(r[c])).join(","))].join("\n");
+}
+
+/* ---------- Routing / rendering ----------
+   #/                         home
+   #/<view>                   level 1 categories
+   #/<view>/<l1>              level 2 subcategories
+   #/<view>/<l1>/<l2>         games (blocks)
+   #/<view>/<l1>/<l2>/<game>  leaf placeholder page                         */
+function parseRoute() {
+  const parts = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
+  return { parts, view: VIEWS[parts[0]] ? parts[0] : null };
+}
+
+function btn(label, route, type) {
+  return `<button data-log="${label.replace(/"/g, "&quot;")}" data-route="${route}" data-type="${type}">${label}</button>`;
+}
+
+function render() {
+  const { parts, view } = parseRoute();
+  const main = document.getElementById("main");
+  const crumbs = [["Home", "#/"]];
+  let html = "";
+
+  if (!view) {
+    html = `<p>Find a game in your backlog. Choose a way to browse:</p><br>
+      <div class="grid">${btn("By Genre", "#/genre", "view")}${btn("By How You Play", "#/play", "view")}</div>`;
+  } else {
+    const V = VIEWS[view];
+    const [, l1id, l2id, gameId] = parts;
+    const l1 = l1id && byId(V.level1, l1id);
+    const l2 = l2id && byId(V.level2, l2id);
+    const game = gameId && GAMES.find(g => g.id === gameId);
+    crumbs.push([V.label, `#/${view}`]);
+    if (l1) crumbs.push([l1.label, `#/${view}/${l1.id}`]);
+    if (l1 && l2) crumbs.push([l2.label, `#/${view}/${l1.id}/${l2.id}`]);
+
+    if (game && l1 && l2) {
+      crumbs.push([game.name, location.hash]);
+      html = `<p>Game page: ${game.name}</p><br>
+        <div class="placeholder">[ Placeholder page for: ${game.name} ]</div>
+        <p>You reached this block via: ${crumbs.slice(1).map(c => c[0]).join(" &gt; ")}</p><br>
+        <div class="placeholder">[ Game details placeholder ]</div>
+        ${btn("Back to " + l2.label, `#/${view}/${l1.id}/${l2.id}`, "back")}`;
+    } else if (l1 && l2) {
+      const list = gamesIn(view, l1.id, l2.id);
+      html = `<p>${l1.label} &gt; ${l2.label}: ${list.length} games</p><br>
+        <div class="grid">${list.map(g => btn(g.name, `#/${view}/${l1.id}/${l2.id}/${g.id}`, "game")).join("")}</div>`;
+    } else if (l1) {
+      // Only show subcategories that contain at least one block.
+      const subs = V.level2.filter(s => gamesIn(view, l1.id, s.id).length);
+      html = `<p>${l1.label}: choose one</p><br>
+        <div class="grid">${subs.map(s => btn(`${s.label} (${gamesIn(view, l1.id, s.id).length})`, `#/${view}/${l1.id}/${s.id}`, "category-2")).join("")}</div>`;
+    } else {
+      html = `<p>${V.label}: choose a category</p><br>
+        <div class="grid">${V.level1.map(c => btn(c.label, `#/${view}/${c.id}`, "category-1")).join("")}</div>`;
+    }
+  }
+
+  main.innerHTML = html;
+  document.getElementById("crumbs").innerHTML = crumbs
+    .map(([label, route], i) => i === crumbs.length - 1
+      ? `<span>${label}</span>`
+      : `<button data-log="Breadcrumb: ${label.replace(/"/g, "&quot;")}" data-route="${route}" data-type="breadcrumb">${label}</button><span>&gt;</span>`)
+    .join("");
+  window.scrollTo(0, 0);
+}
+
+/* One listener records every click on a labeled control, then navigates. */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-log]");
+  if (!el) return;
+  record(el.dataset.log, el);
+  if (el.dataset.route) location.hash = el.dataset.route;
+});
+
+document.getElementById("dl-json").onclick = () => download("click-log.json", JSON.stringify(log, null, 2), "application/json");
+document.getElementById("dl-csv").onclick = () => download("click-log.csv", toCSV(log), "text/csv");
+document.getElementById("copy-json").onclick = async e => {
+  try { await navigator.clipboard.writeText(JSON.stringify(log, null, 2)); e.target.textContent = "Copied"; }
+  catch (err) { document.getElementById("log-panel").hidden = false; document.getElementById("log-text").select(); e.target.textContent = "Select + copy below"; }
+  setTimeout(() => (e.target.textContent = "Copy JSON"), 1500);
+};
+document.getElementById("toggle-log").onclick = e => {
+  const panel = document.getElementById("log-panel");
+  panel.hidden = !panel.hidden;
+  e.target.textContent = panel.hidden ? "Show log" : "Hide log";
+};
+document.getElementById("clear-log").onclick = () => {
+  if (confirm("Clear the click log?")) { log = []; saveLog(); }
+};
+
+window.addEventListener("hashchange", render);
+saveLog();
+render();
+</script>
+</body>
+</html>
