@@ -33,3 +33,8 @@ Then open http://localhost:8356.
 ## Run online
 
 https://carterw1572.github.io/steam-backlog/
+
+## Tree Test links
+
+Test: https://carterw1572.github.io/steam-backlog/test/
+Results: https://carterw1572.github.io/steam-backlog/results/
