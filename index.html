@@ -25,6 +25,31 @@
   fieldset label { display: block; padding: 4px 0; cursor: pointer; }
   @media (max-width: 600px) { .layout { grid-template-columns: 1fr; } }
   [hidden] { display: none !important; }
+
+  /* Tree test (index.html?test and ?results) */
+  .tt-modal { margin: auto; border: 1px solid #000; padding: 24px; max-width: 520px; width: calc(100% - 32px); background: #fff; }
+  .tt-modal::backdrop { background: #fff; }
+  .tt-modal h2, .tt-modal p { margin-bottom: 12px; }
+  .tt-form label { display: block; margin-bottom: 4px; }
+  .tt-form input { display: block; width: 100%; border: 1px solid #000; padding: 8px; margin-bottom: 12px; }
+  .tt-primary { padding: 12px 24px; }
+  .tt-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; align-items: center; gap: 16px;
+    padding: 12px 16px; border-top: 1px solid #000; background: #fff; }
+  .tt-task { flex: 1; }
+  .tt-bar button { flex: none; }
+  #main h1, #main h2 { margin: 16px 0 8px; }
+  #main > p { margin-bottom: 12px; }
+  .tt-scroll { overflow-x: auto; margin-bottom: 16px; }
+  .tt-table { border-collapse: collapse; }
+  .tt-table th, .tt-table td { border: 1px solid #000; padding: 6px 10px; text-align: left; vertical-align: top; }
+  .tt-table tr.tt-summary td { border-top: 3px solid #000; }
+  .tt-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .tt-confirm { border: 1px solid #000; padding: 12px 16px; margin-bottom: 16px; }
+  .tt-confirm p { margin-bottom: 8px; }
+  .tt-confirm button + button { margin-left: 8px; }
+  .tt-details { margin-bottom: 8px; }
+  .tt-details summary { cursor: pointer; padding: 4px 0; }
+  @media (max-width: 600px) { .tt-bar { flex-direction: column; align-items: stretch; gap: 8px; } }
 </style>
 </head>
 <body>
@@ -301,5 +326,6 @@ window.addEventListener("hashchange", render);
 saveLog();
 render();
 </script>
+<script src="tree-test.js"></script>
 </body>
 </html>
