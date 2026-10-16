@@ -43,6 +43,10 @@
   // Each participant gets the tasks in a random order to spread out learning effects.
   // Set to false to always use the order above.
   const SHUFFLE = true;
+  // A tree test checks the category structure, so participants don't get the
+  // search box. Set to true to let them search (a game picked from the
+  // suggestions or the results page still ends the task).
+  const SEARCH_IN_TEST = false;
 
   const KEY = "video-game-finder-tree-test";
   const TAB_KEY = "video-game-finder-tree-test-tab";
@@ -83,10 +87,14 @@
     return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
   }
 
-  // Readable name for a route, e.g. "By Genre > Racing" or "Game: Elden Ring".
+  // Readable name for a route, e.g. "By Genre > Racing", "Search: "kart"" or "Game: Elden Ring".
   function pageName(hash) {
-    const [path] = (hash || "").replace(/^#\/?/, "").split("?");
+    const [path, query = ""] = (hash || "").replace(/^#\/?/, "").split("?");
     const [viewId, catId, gameId] = path.split("/").filter(Boolean);
+    if (viewId === "search") {
+      const game = catId && GAMES.find(g => g.id === catId);
+      return game ? `Game: ${game.name}` : `Search: "${new URLSearchParams(query).get("q") || ""}"`;
+    }
     const V = VIEWS[viewId];
     const cat = V && V.categories.find(c => c.id === catId);
     if (!cat) return "Home";
@@ -183,6 +191,13 @@
     save();
   }
 
+  // The game a click opens: a game card, or a search suggestion ("Suggestion: <name>").
+  function gamePicked(type, label) {
+    if (type === "game") return label;
+    if (type === "suggestion") return label.replace(/^Suggestion: /, "");
+    return null;
+  }
+
   // Route the participant just clicked toward; a hashchange to anywhere else is
   // the browser's Back or Forward button.
   let expected = null;
@@ -200,7 +215,7 @@
     }
     expected = node.dataset.route;
     track(type, node.dataset.log, pageName(node.dataset.route));
-    if (type === "game" && node.dataset.log === currentTask().target) {
+    if (gamePicked(type, node.dataset.log) === currentTask().target) {
       e.stopPropagation();
       e.preventDefault();
       endTask("success");
@@ -325,6 +340,7 @@
     // Participants shouldn't see the click-log controls.
     document.querySelector("footer").hidden = true;
     document.getElementById("log-panel").hidden = true;
+    if (!SEARCH_IN_TEST) document.getElementById("search").hidden = true;
     if (!session) {
       if (tab && tab.pending) showReady();
       else if (tab && tab.thanks) showThanks();
@@ -348,7 +364,7 @@
       backtracks: nav.filter(a => BACKTRACK.includes(a.type)).length,
       // Straight there: no backtracking and no wrong game opened on the way.
       direct: task.outcome === "success" &&
-        !nav.some(a => BACKTRACK.includes(a.type) || (a.type === "game" && a.label !== task.target)),
+        !nav.some(a => BACKTRACK.includes(a.type) || ![null, task.target].includes(gamePicked(a.type, a.label))),
       path: nav.map(a => a.label).join(" > "),
     };
   }

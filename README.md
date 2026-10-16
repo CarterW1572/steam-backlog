@@ -11,6 +11,12 @@ Low-fidelity, click-through wireframe for organizing a game backlog. The categor
 
 The home page shows both views as sections. Each category opens a list of its games, with filters on the left. Within a group, checked filters are combined with OR; across groups, with AND. Filters are saved in the URL, so Back from a game page keeps them, and opening a different category starts with no filters. All 25 games can be reached in both views.
 
+## Search
+
+The search box in the header searches the same 25 games; nothing is copied. A game matches on its name, a nickname (`gta`, `civ 7`, `totk`), or the labels of its genre, players, play style and audience, plus synonyms for those labels (`kids` for Family-Friendly, `couch` for Couch & Local, `shooter` for Competitive Multiplayer). Misspellings after the first letter are allowed (`zelad`, `minecarft`), and unfinished words match as you type. Every word has to match; words that match no game are ignored and listed on the results page. If no game matches every word, the page shows games that match some of them.
+
+Suggestions appear under the box as you type (arrow keys and Enter, or click). Enter or Search opens the results page at `#/search?q=...`, and a game opened from there keeps the query, so Back returns to the results. Synonyms and nicknames are at the top of the search section in `index.html`. Searches and suggestion clicks are recorded in the click log; typing isn't. Tree test participants don't see the search box unless `SEARCH_IN_TEST` in `tree-test.js` is set to true.
+
 ## Click log
 
 Navigation clicks (home, breadcrumbs, categories, games, back) and filter checkbox changes (logged as on/off) are recorded in the browser's localStorage for tree testing. Clicks on the log controls themselves are not recorded. Use the footer buttons to download the log as JSON or CSV, copy it as JSON, show it, or clear it.

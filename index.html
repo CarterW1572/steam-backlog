@@ -26,6 +26,14 @@
   @media (max-width: 600px) { .layout { grid-template-columns: 1fr; } }
   [hidden] { display: none !important; }
 
+  /* Search box with suggestions under it */
+  .search { position: relative; display: flex; gap: 8px; flex: 1 1 280px; max-width: 480px; margin-left: auto; }
+  .search input { flex: 1; min-width: 0; border: 1px solid #000; padding: 8px; }
+  .search ul { position: absolute; top: 100%; left: 0; right: 0; z-index: 5; margin-top: 4px; list-style: none;
+    border: 1px solid #000; background: #fff; }
+  .search li { padding: 8px; cursor: pointer; }
+  .search li:hover, .search li[aria-selected="true"] { outline: 2px solid #000; outline-offset: -2px; }
+
   /* Tree test (index.html?test and ?results) */
   .tt-modal { margin: auto; border: 1px solid #000; padding: 24px; max-width: 520px; width: calc(100% - 32px); background: #fff; }
   .tt-modal::backdrop { background: #fff; }
@@ -56,6 +64,12 @@
 
 <header class="box">
   <button data-log="Home" data-route="#/">Video Game Finder</button>
+  <form class="search" id="search" role="search" autocomplete="off">
+    <input id="search-input" type="search" placeholder="Search games, genres, audience" aria-label="Search games"
+      role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-list">
+    <button id="search-go" type="submit">Search</button>
+    <ul id="search-list" role="listbox" aria-label="Suggestions" hidden></ul>
+  </form>
 </header>
 
 <nav class="box crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
@@ -171,6 +185,129 @@ function gamesIn(view, cat, active) {
   }));
 }
 
+/* ---------- Search ----------
+   Keyword search over the same GAMES. A game is found by its name, a nickname,
+   or the labels of its genre, players, play style and audience (taken from the
+   structures above), plus the synonyms below for those labels. Words can be
+   misspelled (edit distance) or unfinished (prefix), for suggestions as you type.
+   Every word has to match; words that match no game at all are ignored.        */
+const ATTRIBUTES = {
+  genre:    GENRES,
+  players:  VIEWS.genre.filters[0].options,
+  play:     VIEWS.play.categories,
+  audience: AUDIENCE.options,
+};
+const SYNONYMS = {
+  genre: {
+    competitive: "pvp versus vs esports shooter shooters fps moba arena battle royale fighting fighter ranked tactical team",
+    racing:      "race races racer cars car driving drive kart karts motorsport speed track",
+    action:      "adventure story rpg roleplaying openworld exploration explore quest fantasy hero superhero combat platformer soulslike boss bosses",
+    build:       "building builder strategy strategic crafting craft sandbox simulation sim creative create empire turnbased turn city colony management cozy relaxing chill",
+  },
+  players: {
+    single: "singleplayer solo alone offline",
+    multi:  "multiplayer coop cooperative friends together group party team",
+  },
+  play: {
+    single: "singleplayer solo alone offline",
+    online: "internet mmo matchmaking crossplay",
+    local:  "couch splitscreen split screen sofa lan party",
+  },
+  audience: {
+    family: "familyfriendly kids kid children child everyone wholesome casual cute",
+    mature: "adult adults violent violence gore gory dark gritty",
+  },
+};
+// Nicknames people type instead of the full name, by game id.
+const ALIASES = {
+  "counter-strike-2": "cs cs2 csgo", "team-fortress-2": "tf2", "league-of-legends": "lol league",
+  "super-smash-bros-ultimate": "smash ssbu", "forza-horizon-5": "fh5", "gran-turismo-7": "gt7",
+  "mario-kart-8-deluxe": "mk8 mk8dx", "final-fantasy-vii-rebirth": "ff7 ffvii", "marvel-s-spider-man-2": "spidey",
+  "the-legend-of-zelda-tears-of-the-kingdom": "totk", "baldur-s-gate-3": "bg3", "monster-hunter-wilds": "mhw",
+  "god-of-war": "gow", "grand-theft-auto-v": "gta gta5 gtav", "super-mario-odyssey": "smo",
+  "civilization-vii": "civ civ7", "animal-crossing": "acnh", "minecraft": "mc",
+};
+Object.keys(ALIASES).forEach(id => { if (!byId(GAMES, id)) console.warn(`Search: no game with id "${id}"`); });
+
+const STOPWORDS = new Set("a an the and or of to for in on with my me i im want looking some something game games play playing that where you like is it can".split(" "));
+const ROMAN = { ii: "2", iii: "3", iv: "4", v: "5", vi: "6", vii: "7", viii: "8", ix: "9" };
+
+// "Marvel's Spider-Man 2" -> "marvels spider-man 2"
+const normalize = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+  .replace(/['’.]/g, "").replace(/&/g, " and ").replace(/[^a-z0-9-]+/g, " ").trim();
+const split = s => s.split(/[\s-]+/).filter(Boolean).map(w => ROMAN[w] || w);
+// Typed words join hyphens ("co-op" -> "coop"); indexed words are kept both ways.
+const queryWords = s => split(normalize(s).replace(/-/g, ""));
+const indexWords = s => [...new Set([...split(normalize(s)), ...split(normalize(s).replace(/-/g, ""))])];
+
+// Optimal string alignment distance: insertions, deletions, substitutions, swaps.
+function editDistance(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+    }
+  }
+  return d[a.length][b.length];
+}
+
+// How well a typed word matches an indexed word, from 0 (not at all) to 1 (exactly).
+function wordMatch(q, w, minPrefix) {
+  if (q === w) return 1;
+  if (q.length >= minPrefix && w.startsWith(q)) return 0.8;
+  // Typos are allowed after the first letter, which people rarely get wrong.
+  const typos = q.length >= 7 ? 2 : q.length >= 4 ? 1 : 0;
+  if (!typos || q[0] !== w[0]) return 0;
+  if (Math.abs(q.length - w.length) <= typos && editDistance(q, w) <= typos) return 0.7;
+  if (w.length > q.length && editDistance(q, w.slice(0, q.length)) <= typos) return 0.5;
+  return 0;
+}
+
+// Per game: its name and nicknames (weighted higher), then one field per attribute value.
+const SEARCH_INDEX = GAMES.map(g => ({
+  game: g,
+  fields: [
+    { words: [...indexWords(g.name), ...split(ALIASES[g.id] || "")], weight: 3, minPrefix: 2 },
+    ...Object.entries(ATTRIBUTES).flatMap(([attr, options]) => [].concat(g[attr]).map(id => ({
+      words: [...indexWords(byId(options, id).label), ...split(SYNONYMS[attr][id] || "")],
+      weight: 1, minPrefix: 3, label: byId(options, id).label,
+    }))),
+  ],
+}));
+
+// Returns { words, ignored, partial, results: [{ game, score, matched }] }, best first.
+function search(query) {
+  const words = [...new Set(queryWords(query).filter(w => !STOPWORDS.has(w)))];
+  const scored = SEARCH_INDEX.map(({ game, fields }) => ({
+    game,
+    hits: words.map(q => {
+      let best = { score: 0 };
+      fields.forEach(f => f.words.forEach(w => {
+        const score = wordMatch(q, w, f.minPrefix) * f.weight;
+        if (score > best.score) best = { score, label: f.label };
+      }));
+      return best;
+    }),
+  }));
+  const known = words.map((q, i) => scored.some(s => s.hits[i].score > 0));
+  const ignored = words.filter((q, i) => !known[i]);
+  const matches = s => s.hits.filter((h, i) => known[i] && h.score > 0).length;
+  const needed = known.filter(Boolean).length;
+  let found = needed ? scored.filter(s => matches(s) === needed) : [];
+  const partial = needed > 1 && !found.length;
+  if (partial) found = scored.filter(s => matches(s) > 0);
+  const whole = normalize(query).replace(/-/g, "");
+  const results = found.map(s => ({
+    game: s.game,
+    score: matches(s) * 10 + s.hits.reduce((sum, h) => sum + h.score, 0)
+      + (whole && normalize(s.game.name).replace(/-/g, "").startsWith(whole) ? 2 : 0),
+    matched: [...new Set(s.hits.filter(h => h.score > 0 && h.label).map(h => h.label))],
+  })).sort((a, b) => b.score - a.score || a.game.name.localeCompare(b.game.name));
+  return { words, ignored, partial, results };
+}
+
 /* ---------- Click log ---------- */
 const LOG_KEY = "steam-backlog-click-log";
 const SESSION = Date.now().toString(36);
@@ -216,26 +353,53 @@ function toCSV(rows) {
 /* ---------- Routing / rendering ----------
    #/                            home: both views and their categories
    #/<view>/<cat>?f=a,b          filterable game list for a category
-   #/<view>/<cat>/<game>?f=a,b   leaf placeholder page (keeps filters for Back) */
+   #/<view>/<cat>/<game>?f=a,b   leaf placeholder page (keeps filters for Back)
+   #/search?q=words              search results
+   #/search/<game>?q=words       leaf placeholder page (keeps the query for Back) */
 function parseRoute() {
   const [path, query = ""] = location.hash.replace(/^#\/?/, "").split("?");
   const parts = path.split("/").filter(Boolean);
-  const f = new URLSearchParams(query).get("f");
-  return { parts, view: VIEWS[parts[0]] ? parts[0] : null, active: new Set(f ? f.split(",") : []) };
+  const params = new URLSearchParams(query);
+  const f = params.get("f");
+  return { parts, view: VIEWS[parts[0]] ? parts[0] : null, active: new Set(f ? f.split(",") : []), q: params.get("q") || "" };
 }
 
 function routeTo(path, active) {
   return `#/${path}` + (active && active.size ? `?f=${[...active].join(",")}` : "");
 }
 
-const esc = s => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+const searchRoute = (q, gameId) => `#/search${gameId ? "/" + gameId : ""}?q=${encodeURIComponent(q)}`;
+
+const esc = s => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 function btn(label, route, type) {
   return `<button data-log="${esc(label)}" data-route="${route}" data-type="${type}">${esc(label)}</button>`;
 }
 
+function gamePage(game, crumbs, backButton) {
+  return `<p>Game page: ${esc(game.name)}</p><br>
+    <div class="placeholder">[ Placeholder page for: ${esc(game.name)} ]</div>
+    <p>You reached this block via: ${crumbs.slice(1).map(c => esc(c[0])).join(" &gt; ")}</p><br>
+    <div class="placeholder">[ Game details placeholder ]</div>
+    ${backButton}`;
+}
+
+function searchResults(q) {
+  const examples = `a game name, a genre (${GENRES.map(c => c.label).join(", ")}) or an audience (${AUDIENCE.options.map(o => o.label).join(", ")})`;
+  if (!q.trim()) return `<p>Search for ${esc(examples)}.</p>`;
+  const { ignored, partial, results } = search(q);
+  return `<p>${results.length} ${results.length === 1 ? "game" : "games"} for "${esc(q)}"</p><br>
+    ${partial ? `<p>No game matches every word, so these match some of them.</p><br>` : ""}
+    ${ignored.length ? `<p>Nothing matched: ${esc(ignored.join(", "))}</p><br>` : ""}
+    ${results.length
+      ? `<div class="grid">${results.map(({ game, matched }) =>
+          `<button data-log="${esc(game.name)}" data-route="${searchRoute(q, game.id)}" data-type="game">${esc(game.name)}${
+            matched.length ? `<br><span>Matched: ${esc(matched.join(", "))}</span>` : ""}</button>`).join("")}</div>`
+      : `<div class="placeholder">No games match. Try ${esc(examples)}.</div>`}`;
+}
+
 function render(keepScroll) {
-  const { parts, view, active } = parseRoute();
+  const { parts, view, active, q } = parseRoute();
   const main = document.getElementById("main");
   const crumbs = [["Home", "#/"]];
   let html = "";
@@ -243,8 +407,18 @@ function render(keepScroll) {
   const [, catId, gameId] = parts;
   const cat = view && catId && byId(VIEWS[view].categories, catId);
 
+  if (parts[0] === "search") {
+    const resultsRoute = searchRoute(q);
+    const game = catId && byId(GAMES, catId);
+    crumbs.push([`Search: "${q}"`, resultsRoute]);
+    if (game) {
+      crumbs.push([game.name, null]);
+      html = gamePage(game, crumbs, btn("Back to search results", resultsRoute, "back"));
+    } else {
+      html = searchResults(q);
+    }
   // Home (and any route without a valid category) shows both views as sections.
-  if (!cat) {
+  } else if (!cat) {
     html = `<p>Find a game in your backlog.</p><br>` + Object.entries(VIEWS).map(([id, V]) =>
       `<section class="box"><p>${V.label}</p><br>
         <div class="grid">${V.categories.map(c => btn(c.label, routeTo(`${id}/${c.id}`), "category")).join("")}</div>
@@ -257,11 +431,7 @@ function render(keepScroll) {
 
     if (game) {
       crumbs.push([game.name, null]);
-      html = `<p>Game page: ${esc(game.name)}</p><br>
-        <div class="placeholder">[ Placeholder page for: ${esc(game.name)} ]</div>
-        <p>You reached this block via: ${crumbs.slice(1).map(c => esc(c[0])).join(" &gt; ")}</p><br>
-        <div class="placeholder">[ Game details placeholder ]</div>
-        ${btn("Back to " + cat.label, listRoute, "back")}`;
+      html = gamePage(game, crumbs, btn("Back to " + cat.label, listRoute, "back"));
     } else {
       const list = gamesIn(view, cat.id, active);
       const filters = V.filters.map(group => `<fieldset><legend>${group.label}</legend>
@@ -284,6 +454,9 @@ function render(keepScroll) {
       ? `<span>${esc(label)}</span>${i === crumbs.length - 1 ? "" : "<span>&gt;</span>"}`
       : `<button data-log="Breadcrumb: ${esc(label)}" data-route="${route}" data-type="breadcrumb">${esc(label)}</button><span>&gt;</span>`)
     .join("");
+  searchInput.value = parts[0] === "search" ? q : "";
+  updateSearchButton();
+  closeSuggestions();
   if (!keepScroll) window.scrollTo(0, 0);
 }
 
@@ -321,6 +494,73 @@ document.getElementById("toggle-log").onclick = e => {
 document.getElementById("clear-log").onclick = () => {
   if (confirm("Clear the click log?")) { log = []; saveLog(); }
 };
+
+/* Search box. The Search button and each suggestion carry data-log and
+   data-route like every other control, so the click listener above logs and
+   opens them; pressing Enter in the box clicks the Search button. Typing
+   itself isn't logged.                                                     */
+const searchForm = document.getElementById("search");
+const searchInput = document.getElementById("search-input");
+const searchButton = document.getElementById("search-go");
+const suggestionList = document.getElementById("search-list");
+let activeSuggestion = -1;
+
+function updateSearchButton() {
+  const q = searchInput.value.trim();
+  if (q) Object.assign(searchButton.dataset, { log: `Search: "${q}"`, route: searchRoute(q), type: "search" });
+  else ["log", "route", "type"].forEach(k => delete searchButton.dataset[k]);
+}
+
+function setActiveSuggestion(i) {
+  const options = suggestionList.querySelectorAll("li");
+  activeSuggestion = i;
+  options.forEach((li, n) => li.setAttribute("aria-selected", n === i));
+  if (options[i]) searchInput.setAttribute("aria-activedescendant", options[i].id);
+  else searchInput.removeAttribute("aria-activedescendant");
+}
+
+function closeSuggestions() {
+  suggestionList.hidden = true;
+  searchInput.setAttribute("aria-expanded", "false");
+  setActiveSuggestion(-1);
+}
+
+function showSuggestions() {
+  const q = searchInput.value.trim();
+  if (!q) return closeSuggestions();
+  const top = search(q).results.slice(0, 6);
+  suggestionList.innerHTML = top.map(({ game }, i) =>
+    `<li role="option" id="suggestion-${i}" data-log="Suggestion: ${esc(game.name)}" data-route="${searchRoute(q, game.id)}"
+      data-type="suggestion">${esc(game.name)}</li>`).join("") +
+    `<li role="option" id="suggestion-${top.length}" data-log="${esc(`Search: "${q}"`)}" data-route="${searchRoute(q)}"
+      data-type="search">See all results for "${esc(q)}"</li>`;
+  suggestionList.hidden = false;
+  searchInput.setAttribute("aria-expanded", "true");
+  setActiveSuggestion(-1);
+}
+
+searchInput.addEventListener("input", () => { updateSearchButton(); showSuggestions(); });
+searchInput.addEventListener("keydown", e => {
+  const count = suggestionList.querySelectorAll("li").length;
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    if (suggestionList.hidden) showSuggestions();
+    if (!count) return;
+    setActiveSuggestion(e.key === "ArrowDown" ? (activeSuggestion + 1) % count
+      : activeSuggestion <= 0 ? count - 1 : activeSuggestion - 1);
+  } else if (e.key === "Enter" && !suggestionList.hidden && activeSuggestion >= 0) {
+    e.preventDefault();
+    suggestionList.querySelectorAll("li")[activeSuggestion].click();
+  } else if (e.key === "Escape" && !suggestionList.hidden) {
+    e.preventDefault();
+    closeSuggestions();
+  }
+});
+// Keep focus in the box while clicking a suggestion, and close the list on the way out.
+suggestionList.addEventListener("mousedown", e => e.preventDefault());
+searchForm.addEventListener("focusout", e => { if (!searchForm.contains(e.relatedTarget)) closeSuggestions(); });
+searchForm.addEventListener("click", e => { if (e.target.closest("[data-log]")) closeSuggestions(); });
+searchForm.addEventListener("submit", e => e.preventDefault());
 
 window.addEventListener("hashchange", render);
 saveLog();
