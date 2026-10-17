@@ -1,6 +1,6 @@
 # Video Game Finder
 
-Low-fidelity, click-through wireframe for organizing a game backlog. The categories and labels come from our card sort (8 participants, 25 cards).
+Click-through prototype for organizing a game backlog. The categories and labels come from our card sort (8 participants, 25 cards).
 
 ## Two views of the same 25 blocks
 
@@ -15,11 +15,22 @@ The home page shows both views as sections. Each category opens a list of its ga
 
 The search box in the header searches the same 25 games; nothing is copied. A game matches on its name, a nickname (`gta`, `civ 7`, `totk`), or the labels of its genre, players, play style and audience, plus synonyms for those labels (`kids` for Family-Friendly, `couch` for Couch & Local, `shooter` for Competitive Multiplayer). Misspellings after the first letter are allowed (`zelad`, `minecarft`), and unfinished words match as you type. Every word has to match; words that match no game are ignored and listed on the results page. If no game matches every word, the page shows games that match some of them.
 
-Suggestions appear under the box as you type (arrow keys and Enter, or click). Enter or Search opens the results page at `#/search?q=...`, and a game opened from there keeps the query, so Back returns to the results. Synonyms and nicknames are at the top of the search section in `index.html`. Searches and suggestion clicks are recorded in the click log; typing isn't. Tree test participants don't see the search box unless `SEARCH_IN_TEST` in `tree-test.js` is set to true.
+Suggestions appear under the box as you type (arrow keys and Enter, or click). Enter or Search opens the results page at `#/search?q=...`, and a game opened from there keeps the query, so Back returns to the results. Synonyms and nicknames are at the top of the search section in `index.html`. Tree test participants don't see the search box unless `SEARCH_IN_TEST` in `tree-test.js` is set to true.
 
-## Click log
+## Visual design
 
-Navigation clicks (home, breadcrumbs, categories, games, back) and filter checkbox changes (logged as on/off) are recorded in the browser's localStorage for tree testing. Clicks on the log controls themselves are not recorded. Use the footer buttons to download the log as JSON or CSV, copy it as JSON, show it, or clear it.
+Dark, rounded cards on a purple color scheme, set in Inter (loaded from Google Fonts). The colors are defined once as CSS variables at the top of the stylesheet in `index.html`:
+
+| Token | Value | Used for |
+|---|---|---|
+| `--shade` | `hsl(265 40% 17%)` | Surfaces: cards, panels, search box, suggestion list |
+| `--base` | `hsl(265 70% 58%)` | Things you act on: hover and focus borders, checkboxes, the logo mark, selected suggestion, cover art |
+| `--tint` | `hsl(265 90% 84%)` | Links and highlights on purple: breadcrumbs, card arrows, cover initials |
+| `--accent` | `hsl(45 100% 55%)` | Only where the eye goes first: the Search button, the home page's section headings, and each page's title |
+
+The other colors are neutral grays (background, text, muted text, lines). Cards and panels use a 16px radius; buttons, the search box and tags are pill-shaped. Header, breadcrumbs and page content share one 1120px column, and the home page's category cards sit in a four-column grid so both views' cards line up.
+
+The tree test's participant pop-ups, task bar and results page keep the plain black-and-white wireframe look.
 
 ## Tree test
 

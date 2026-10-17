@@ -4,49 +4,167 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Video Game Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* Wireframe fidelity: black and white, one font, one size, generic boxes. */
-  * { box-sizing: border-box; margin: 0; padding: 0; font: 16px/1.4 Arial, sans-serif; color: #000; }
-  body { background: #fff; padding: 16px; max-width: 900px; margin: 0 auto; }
-  button { background: #fff; border: 1px solid #000; padding: 8px 12px; cursor: pointer; text-align: left; }
-  /* Only clickable controls get outlines; sections are separated by spacing. */
-  .box { padding: 12px 0; margin-bottom: 12px; }
-  header.box, footer.box { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .crumbs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-  .crumbs button { padding: 4px 8px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-  .grid button { min-height: 72px; width: 100%; }
-  .placeholder { padding: 12px 0; margin-bottom: 12px; }
-  .spacer { flex: 1; }
-  textarea { width: 100%; height: 160px; border: 1px solid #000; padding: 8px; font-family: Arial, sans-serif; }
-  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
-  .layout aside { margin: 0; }
-  fieldset { border: none; padding: 0; margin-bottom: 12px; }
-  fieldset label { display: block; padding: 4px 0; cursor: pointer; }
-  @media (max-width: 600px) { .layout { grid-template-columns: 1fr; } }
+  /* Color system: one hue (purple, 265°) in three steps, plus one accent from
+     the opposite side of the color wheel. Neutrals are grays.
+       shade  surfaces: cards, panels, the search box
+       base   things you can act on: hover and focus rings, checkboxes, cover art
+       tint   secondary links and highlights on top of purple
+       accent where the eye goes first: the Search button, the home page's
+              section headings, and each page's title                        */
+  :root {
+    --shade:  hsl(265 40% 17%);
+    --base:   hsl(265 70% 58%);
+    --tint:   hsl(265 90% 84%);
+    --accent: hsl(45 100% 55%);
+    --bg:     #0e0e11;
+    --line:   #2c2c33;
+    --text:   #f2f2f2;
+    --muted:  #a3a3ab;
+    --on-accent: #17130a;
+    --radius: 16px;
+    --gutter: 24px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font: 16px/1.5 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  button, input { font: inherit; color: inherit; }
+  button { background: none; border: 0; cursor: pointer; text-align: left; }
+  :focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
   [hidden] { display: none !important; }
+  .muted { color: var(--muted); }
+
+  /* One column grid: header, breadcrumbs and page share the same left and right edges. */
+  .container { max-width: 1120px; margin: 0 auto; padding-left: var(--gutter); padding-right: var(--gutter); }
+
+  /* Header */
+  .site-header { position: sticky; top: 0; z-index: 20; background: rgb(14 14 17 / 0.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line); }
+  .header-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding-top: 14px; padding-bottom: 14px; }
+  .logo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .logo-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--base);
+    font-size: 13px; font-weight: 800; letter-spacing: 0.02em; }
 
   /* Search box with suggestions under it */
-  .search { position: relative; display: flex; gap: 8px; flex: 1 1 280px; max-width: 480px; margin-left: auto; }
-  .search input { flex: 1; min-width: 0; border: 1px solid #000; padding: 8px; }
-  .search ul { position: absolute; top: 100%; left: 0; right: 0; z-index: 5; margin-top: 4px; list-style: none;
-    border: 1px solid #000; background: #fff; }
-  .search li { padding: 8px; cursor: pointer; }
-  .search li:hover, .search li[aria-selected="true"] { outline: 2px solid #000; outline-offset: -2px; }
+  .search { position: relative; display: flex; gap: 8px; flex: 1 1 320px; max-width: 520px; margin-left: auto; }
+  .search input { flex: 1; width: 0; min-width: 0; height: 44px; padding: 0 20px; border-radius: 999px; border: 1px solid transparent;
+    background: var(--shade); }
+  .search input::placeholder { color: var(--muted); }
+  .search input:focus { outline: none; border-color: var(--base); }
+  #search-go { height: 44px; padding: 0 22px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 700; }
+  #search-go:hover { filter: brightness(1.08); }
+  .search ul { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 5; list-style: none; padding: 8px;
+    border: 1px solid var(--line); border-radius: var(--radius); background: var(--shade); box-shadow: 0 16px 40px rgb(0 0 0 / 0.5); }
+  .search li { padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+  .search li:hover, .search li[aria-selected="true"] { background: var(--base); }
+  .search li.see-all { color: var(--tint); font-weight: 500; }
+  .search li.see-all:hover, .search li.see-all[aria-selected="true"] { color: var(--text); }
 
-  /* Tree test (index.html?test and ?results) */
+  /* Breadcrumbs */
+  .crumbs { display: flex; flex-wrap: wrap; align-items: center; padding-top: 20px; font-size: 14px; color: var(--muted); }
+  .crumbs button { color: var(--tint); }
+  .crumbs button:hover { text-decoration: underline; }
+  .crumbs .sep { margin: 0 8px; }
+  .crumbs .current { color: var(--text); }
+
+  /* Type scale: hero 40, page title 36, section 22, card 18/16, body 16, meta 14/13, label 12 */
+  #main { padding-top: 28px; padding-bottom: 72px; }
+  .hero { margin-bottom: 48px; }
+  .hero-title { font-size: 40px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; }
+  .page-head { margin-bottom: 32px; }
+  .eyebrow { margin-bottom: 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .page-title { font-size: 36px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; color: var(--accent); }
+  .page-sub { margin-top: 8px; font-size: 16px; color: var(--muted); }
+  .section-title { margin-bottom: 16px; font-size: 22px; font-weight: 700; color: var(--accent); }
+  .browse + .browse { margin-top: 48px; }
+  .notice { margin: -16px 0 24px; color: var(--muted); }
+
+  /* Cards: every card is the same rounded shape on the same dark purple ground. */
+  .card { display: flex; flex-direction: column; width: 100%; border: 1px solid transparent; border-radius: var(--radius);
+    background: var(--shade); transition: transform 0.15s, border-color 0.15s; }
+  .card:hover { border-color: var(--base); transform: translateY(-2px); }
+  .card-title { font-size: 18px; font-weight: 600; line-height: 1.3; }
+  .card-meta { font-size: 14px; color: var(--muted); }
+
+  /* Four columns on the home page, so both views' cards line up in the same columns. */
+  .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .cat-card { justify-content: space-between; gap: 24px; min-height: 136px; padding: 20px; }
+  .card-foot { display: flex; align-items: center; justify-content: space-between; }
+  .card-arrow { color: var(--tint); font-size: 20px; transition: transform 0.15s; }
+  .cat-card:hover .card-arrow { transform: translateX(4px); }
+
+  .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; align-content: start; }
+  .game-card { overflow: hidden; }
+  .game-card .card-title { font-size: 16px; }
+  .card-body { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px 18px; }
+  .card-note { font-size: 13px; color: var(--muted); }
+  /* Mostly shade, so a page of covers doesn't outweigh the accent title. */
+  .cover { display: grid; place-items: center; aspect-ratio: 2 / 1; background: linear-gradient(150deg, var(--base) -60%, var(--shade) 75%);
+    color: var(--tint); font-size: 28px; font-weight: 800; letter-spacing: 0.04em; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--muted); }
+
+  /* Category page: filters on the left, games on the right. */
+  .layout { display: grid; grid-template-columns: 240px 1fr; gap: 32px; align-items: start; }
+  .panel { padding: 20px; border-radius: var(--radius); background: var(--shade); }
+  .panel-title { margin-bottom: 16px; font-size: 16px; font-weight: 700; }
+  .filters { position: sticky; top: 96px; }
+  fieldset { border: none; }
+  fieldset + fieldset { margin-top: 20px; }
+  legend { margin-bottom: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  fieldset label { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 15px; cursor: pointer; }
+  fieldset input { width: 18px; height: 18px; accent-color: var(--base); cursor: pointer; }
+  .empty { padding: 40px 24px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); text-align: center; }
+
+  /* Game page */
+  .detail { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; margin-bottom: 32px; }
+  .cover-large { border-radius: var(--radius); font-size: 64px; }
+  .detail .panel { display: flex; flex-direction: column; gap: 12px; }
+  .detail .panel-title { margin-bottom: 0; }
+  .skeleton { height: 10px; border-radius: 999px; background: var(--line); }
+  .via { margin-top: auto; padding-top: 12px; font-size: 14px; color: var(--muted); }
+  .btn-secondary { padding: 10px 20px; border: 1px solid var(--base); border-radius: 999px; font-weight: 600; }
+  .btn-secondary:hover { background: var(--base); }
+
+  @media (max-width: 900px) {
+    .cat-grid { grid-template-columns: repeat(2, 1fr); }
+    .detail { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .filters { position: static; }
+  }
+  @media (max-width: 600px) {
+    :root { --gutter: 16px; }
+    .search { flex-basis: 100%; max-width: none; }
+    .hero-title { font-size: 30px; }
+    .page-title { font-size: 28px; }
+    .cat-grid { grid-template-columns: 1fr; }
+    .cat-card { min-height: 0; }
+  }
+
+  /* Tree test screens (index.html?test and ?results) keep the plain wireframe
+     look: black on white, Arial, square boxes.                                */
+  .tt-plain { background: #fff; max-width: 900px; margin: 0 auto; padding: 16px; }
+  .tt-plain .container { padding: 0; }
+  .tt-plain, .tt-plain *, .tt-modal, .tt-modal *, .tt-bar, .tt-bar * { font: 16px/1.4 Arial, sans-serif; color: #000; }
+  .tt-plain button, .tt-modal button, .tt-bar button { background: #fff; border: 1px solid #000; border-radius: 0;
+    padding: 8px 12px; cursor: pointer; text-align: left; }
   .tt-modal { margin: auto; border: 1px solid #000; padding: 24px; max-width: 520px; width: calc(100% - 32px); background: #fff; }
   .tt-modal::backdrop { background: #fff; }
   .tt-modal h2, .tt-modal p { margin-bottom: 12px; }
   .tt-form label { display: block; margin-bottom: 4px; }
   .tt-form input { display: block; width: 100%; border: 1px solid #000; padding: 8px; margin-bottom: 12px; }
-  .tt-primary { padding: 12px 24px; }
-  .tt-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; align-items: center; gap: 16px;
+  .tt-modal .tt-primary { padding: 12px 24px; }
+  .tt-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; align-items: center; gap: 16px;
     padding: 12px 16px; border-top: 1px solid #000; background: #fff; }
   .tt-task { flex: 1; }
   .tt-bar button { flex: none; }
-  #main h1, #main h2 { margin: 16px 0 8px; }
-  #main > p { margin-bottom: 12px; }
+  .tt-plain #main { padding: 0; }
+  .tt-plain #main h1, .tt-plain #main h2 { margin: 16px 0 8px; }
+  .tt-plain #main > p { margin-bottom: 12px; }
   .tt-scroll { overflow-x: auto; margin-bottom: 16px; }
   .tt-table { border-collapse: collapse; }
   .tt-table th, .tt-table td { border: 1px solid #000; padding: 6px 10px; text-align: left; vertical-align: top; }
@@ -62,32 +180,21 @@
 </head>
 <body>
 
-<header class="box">
-  <button data-log="Home" data-route="#/">Video Game Finder</button>
-  <form class="search" id="search" role="search" autocomplete="off">
-    <input id="search-input" type="search" placeholder="Search games, genres, audience" aria-label="Search games"
-      role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-list">
-    <button id="search-go" type="submit">Search</button>
-    <ul id="search-list" role="listbox" aria-label="Suggestions" hidden></ul>
-  </form>
+<header class="site-header">
+  <div class="container header-row">
+    <button class="logo" data-log="Home" data-route="#/"><span class="logo-mark" aria-hidden="true">VG</span>Video Game Finder</button>
+    <form class="search" id="search" role="search" autocomplete="off">
+      <input id="search-input" type="search" placeholder="Search games, genres, audience" aria-label="Search games"
+        role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-list">
+      <button id="search-go" type="submit">Search</button>
+      <ul id="search-list" role="listbox" aria-label="Suggestions" hidden></ul>
+    </form>
+  </div>
 </header>
 
-<nav class="box crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+<nav class="container crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
 
-<main class="box" id="main"></main>
-
-<footer class="box">
-  <span>Click log: <span id="log-count">0</span> clicks</span>
-  <span class="spacer"></span>
-  <button id="dl-json">Download JSON</button>
-  <button id="dl-csv">Download CSV</button>
-  <button id="copy-json">Copy JSON</button>
-  <button id="toggle-log">Show log</button>
-  <button id="clear-log">Clear log</button>
-</footer>
-<section class="box" id="log-panel" hidden>
-  <textarea id="log-text" readonly aria-label="Click log JSON"></textarea>
-</section>
+<main class="container" id="main"></main>
 
 <script>
 /* ---------- Information blocks (the 25 card-sort cards) ----------
@@ -308,48 +415,6 @@ function search(query) {
   return { words, ignored, partial, results };
 }
 
-/* ---------- Click log ---------- */
-const LOG_KEY = "steam-backlog-click-log";
-const SESSION = Date.now().toString(36);
-let log = [];
-try { log = JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch (e) { log = []; }
-
-function saveLog() {
-  try { localStorage.setItem(LOG_KEY, JSON.stringify(log)); } catch (e) {}
-  document.getElementById("log-count").textContent = log.length;
-  document.getElementById("log-text").value = JSON.stringify(log, null, 2);
-}
-
-function record(label, type, to) {
-  const route = parseRoute();
-  log.push({
-    seq: log.length + 1,
-    session: SESSION,
-    time: new Date().toISOString(),
-    label,
-    type,
-    from: location.hash || "#/",
-    to,
-    view: route.view || "",
-    depth: route.parts.length,
-  });
-  saveLog();
-}
-
-function download(filename, text, mime) {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([text], { type: mime }));
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function toCSV(rows) {
-  const cols = ["seq", "session", "time", "label", "type", "from", "to", "view", "depth"];
-  const esc = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  return [cols.join(","), ...rows.map(r => cols.map(c => esc(r[c])).join(","))].join("\n");
-}
-
 /* ---------- Routing / rendering ----------
    #/                            home: both views and their categories
    #/<view>/<cat>?f=a,b          filterable game list for a category
@@ -372,30 +437,73 @@ const searchRoute = (q, gameId) => `#/search${gameId ? "/" + gameId : ""}?q=${en
 
 const esc = s => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-function btn(label, route, type) {
-  return `<button data-log="${esc(label)}" data-route="${route}" data-type="${type}">${esc(label)}</button>`;
+const plural = n => `${n} ${n === 1 ? "game" : "games"}`;
+
+// Page heading: a small label above, the title in the accent color, a line of detail below.
+function pageHead(eyebrow, title, sub) {
+  return `<div class="page-head">
+    ${eyebrow ? `<p class="eyebrow">${esc(eyebrow)}</p>` : ""}
+    <h1 class="page-title">${esc(title)}</h1>
+    ${sub ? `<p class="page-sub">${sub}</p>` : ""}
+  </div>`;
 }
 
-function gamePage(game, crumbs, backButton) {
-  return `<p>Game page: ${esc(game.name)}</p><br>
-    <div class="placeholder">[ Placeholder page for: ${esc(game.name)} ]</div>
-    <p>You reached this block via: ${crumbs.slice(1).map(c => esc(c[0])).join(" &gt; ")}</p><br>
-    <div class="placeholder">[ Game details placeholder ]</div>
-    ${backButton}`;
+function categoryCard(label, route, count) {
+  return `<button class="card cat-card" data-log="${esc(label)}" data-route="${route}" data-type="category">
+    <span class="card-title">${esc(label)}</span>
+    <span class="card-foot"><span class="card-meta">${plural(count)}</span><span class="card-arrow" aria-hidden="true">→</span></span>
+  </button>`;
+}
+
+// Stand-in cover art until there are real images: the game's initials.
+const initials = name => name.split(/[\s:-]+/).filter(w => /^[A-Za-z]/.test(w) && !/^(the|of)$/i.test(w))
+  .slice(0, 2).map(w => w[0].toUpperCase()).join("");
+
+const gameTags = g => [byId(GENRES, g.genre).label, byId(AUDIENCE.options, g.audience).label]
+  .map(t => `<span class="tag">${esc(t)}</span>`).join("");
+
+function gameCard(game, route, note) {
+  return `<button class="card game-card" data-log="${esc(game.name)}" data-route="${route}" data-type="game">
+    <span class="cover" aria-hidden="true">${initials(game.name)}</span>
+    <span class="card-body">
+      <span class="card-title">${esc(game.name)}</span>
+      <span class="tags">${gameTags(game)}</span>
+      ${note ? `<span class="card-note">${note}</span>` : ""}
+    </span>
+  </button>`;
+}
+
+function backButton(label, route) {
+  return `<button class="btn-secondary" data-log="${esc(label)}" data-route="${route}" data-type="back">← ${esc(label)}</button>`;
+}
+
+function gamePage(game, crumbs, eyebrow, back) {
+  return `${pageHead(eyebrow, game.name, `<span class="tags">${gameTags(game)}</span>`)}
+    <div class="detail">
+      <div class="cover cover-large" aria-hidden="true">${initials(game.name)}</div>
+      <section class="panel" aria-label="Game details">
+        <h2 class="panel-title">About this game</h2>
+        <p class="muted">[ Game details placeholder ]</p>
+        <div class="skeleton" style="width: 92%"></div>
+        <div class="skeleton" style="width: 78%"></div>
+        <div class="skeleton" style="width: 85%"></div>
+        <p class="via">Found via ${crumbs.slice(1).map(c => esc(c[0])).join(" › ")}</p>
+      </section>
+    </div>
+    ${back}`;
 }
 
 function searchResults(q) {
   const examples = `a game name, a genre (${GENRES.map(c => c.label).join(", ")}) or an audience (${AUDIENCE.options.map(o => o.label).join(", ")})`;
-  if (!q.trim()) return `<p>Search for ${esc(examples)}.</p>`;
+  if (!q.trim()) return pageHead("Search", "Search", `Search for ${esc(examples)}.`);
   const { ignored, partial, results } = search(q);
-  return `<p>${results.length} ${results.length === 1 ? "game" : "games"} for "${esc(q)}"</p><br>
-    ${partial ? `<p>No game matches every word, so these match some of them.</p><br>` : ""}
-    ${ignored.length ? `<p>Nothing matched: ${esc(ignored.join(", "))}</p><br>` : ""}
+  return `${pageHead("Search", `Results for "${q}"`, plural(results.length))}
+    ${partial ? `<p class="notice">No game matches every word, so these match some of them.</p>` : ""}
+    ${ignored.length ? `<p class="notice">Nothing matched: ${esc(ignored.join(", "))}</p>` : ""}
     ${results.length
-      ? `<div class="grid">${results.map(({ game, matched }) =>
-          `<button data-log="${esc(game.name)}" data-route="${searchRoute(q, game.id)}" data-type="game">${esc(game.name)}${
-            matched.length ? `<br><span>Matched: ${esc(matched.join(", "))}</span>` : ""}</button>`).join("")}</div>`
-      : `<div class="placeholder">No games match. Try ${esc(examples)}.</div>`}`;
+      ? `<div class="game-grid">${results.map(({ game, matched }) => gameCard(game, searchRoute(q, game.id),
+          matched.length ? `Matched: ${esc(matched.join(", "))}` : "")).join("")}</div>`
+      : `<div class="empty">No games match. Try ${esc(examples)}.</div>`}`;
 }
 
 function render(keepScroll) {
@@ -413,15 +521,20 @@ function render(keepScroll) {
     crumbs.push([`Search: "${q}"`, resultsRoute]);
     if (game) {
       crumbs.push([game.name, null]);
-      html = gamePage(game, crumbs, btn("Back to search results", resultsRoute, "back"));
+      html = gamePage(game, crumbs, "Search", backButton("Back to search results", resultsRoute));
     } else {
       html = searchResults(q);
     }
   // Home (and any route without a valid category) shows both views as sections.
   } else if (!cat) {
-    html = `<p>Find a game in your backlog.</p><br>` + Object.entries(VIEWS).map(([id, V]) =>
-      `<section class="box"><p>${V.label}</p><br>
-        <div class="grid">${V.categories.map(c => btn(c.label, routeTo(`${id}/${c.id}`), "category")).join("")}</div>
+    html = `<section class="hero">
+        <h1 class="hero-title">Find a game in your backlog</h1>
+        <p class="page-sub">Browse by genre or by how you play.</p>
+      </section>` + Object.entries(VIEWS).map(([id, V]) =>
+      `<section class="browse" aria-labelledby="view-${id}">
+        <h2 class="section-title" id="view-${id}">${esc(V.label)}</h2>
+        <div class="cat-grid">${V.categories.map(c => categoryCard(c.label, routeTo(`${id}/${c.id}`),
+          GAMES.filter(g => V.inCategory(g, c.id)).length)).join("")}</div>
       </section>`).join("");
   } else {
     const V = VIEWS[view];
@@ -431,28 +544,31 @@ function render(keepScroll) {
 
     if (game) {
       crumbs.push([game.name, null]);
-      html = gamePage(game, crumbs, btn("Back to " + cat.label, listRoute, "back"));
+      html = gamePage(game, crumbs, cat.label, backButton("Back to " + cat.label, listRoute));
     } else {
       const list = gamesIn(view, cat.id, active);
       const filters = V.filters.map(group => `<fieldset><legend>${group.label}</legend>
         ${group.options.map(o => `<label><input type="checkbox" data-log="Filter: ${esc(o.label)}" data-type="filter"
           data-filter="${o.id}"${active.has(o.id) ? " checked" : ""}> ${esc(o.label)}</label>`).join("")}
         </fieldset>`).join("");
-      html = `<div class="layout">
-        <aside class="box" aria-label="Filters"><p>Filter</p><br>${filters}</aside>
-        <div><p>${esc(cat.label)}: ${list.length} games</p><br>
+      html = `${pageHead(V.label, cat.label, plural(list.length))}
+        <div class="layout">
+          <aside class="panel filters" aria-label="Filters"><h2 class="panel-title">Filter</h2>${filters}</aside>
           ${list.length
-            ? `<div class="grid">${list.map(g => btn(g.name, routeTo(`${view}/${cat.id}/${g.id}`, active), "game")).join("")}</div>`
-            : `<div class="placeholder">No games match these filters.</div>`}
-        </div></div>`;
+            ? `<div class="game-grid">${list.map(g => gameCard(g, routeTo(`${view}/${cat.id}/${g.id}`, active))).join("")}</div>`
+            : `<div class="empty">No games match these filters.</div>`}
+        </div>`;
     }
   }
 
   main.innerHTML = html;
+  const sep = `<span class="sep" aria-hidden="true">›</span>`;
   document.getElementById("crumbs").innerHTML = crumbs
-    .map(([label, route], i) => i === crumbs.length - 1 || !route
-      ? `<span>${esc(label)}</span>${i === crumbs.length - 1 ? "" : "<span>&gt;</span>"}`
-      : `<button data-log="Breadcrumb: ${esc(label)}" data-route="${route}" data-type="breadcrumb">${esc(label)}</button><span>&gt;</span>`)
+    .map(([label, route], i) => i === crumbs.length - 1
+      ? `<span class="current" aria-current="page">${esc(label)}</span>`
+      : (route
+        ? `<button data-log="Breadcrumb: ${esc(label)}" data-route="${route}" data-type="breadcrumb">${esc(label)}</button>`
+        : `<span>${esc(label)}</span>`) + sep)
     .join("");
   searchInput.value = parts[0] === "search" ? q : "";
   updateSearchButton();
@@ -460,45 +576,26 @@ function render(keepScroll) {
   if (!keepScroll) window.scrollTo(0, 0);
 }
 
-/* One listener records every navigation or filter click. Filter changes
-   replace the current history entry so the browser Back button still
-   goes to the previous page, not the previous filter state. */
+/* One listener handles every navigation or filter click. data-log is the
+   label the tree test records (tree-test.js). Filter changes replace the
+   current history entry so the browser Back button still goes to the
+   previous page, not the previous filter state. */
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-log]");
   if (!el) return;
   if (el.dataset.type === "filter") {
     const { parts, active } = parseRoute();
     el.checked ? active.add(el.dataset.filter) : active.delete(el.dataset.filter);
-    const to = routeTo(parts.join("/"), active);
-    record(`${el.dataset.log} (${el.checked ? "on" : "off"})`, "filter", to);
-    history.replaceState(null, "", to);
+    history.replaceState(null, "", routeTo(parts.join("/"), active));
     render(true);
     return;
   }
-  record(el.dataset.log, el.dataset.type, el.dataset.route);
   location.hash = el.dataset.route;
 });
 
-document.getElementById("dl-json").onclick = () => download("click-log.json", JSON.stringify(log, null, 2), "application/json");
-document.getElementById("dl-csv").onclick = () => download("click-log.csv", toCSV(log), "text/csv");
-document.getElementById("copy-json").onclick = async e => {
-  try { await navigator.clipboard.writeText(JSON.stringify(log, null, 2)); e.target.textContent = "Copied"; }
-  catch (err) { document.getElementById("log-panel").hidden = false; document.getElementById("log-text").select(); e.target.textContent = "Select + copy below"; }
-  setTimeout(() => (e.target.textContent = "Copy JSON"), 1500);
-};
-document.getElementById("toggle-log").onclick = e => {
-  const panel = document.getElementById("log-panel");
-  panel.hidden = !panel.hidden;
-  e.target.textContent = panel.hidden ? "Show log" : "Hide log";
-};
-document.getElementById("clear-log").onclick = () => {
-  if (confirm("Clear the click log?")) { log = []; saveLog(); }
-};
-
 /* Search box. The Search button and each suggestion carry data-log and
-   data-route like every other control, so the click listener above logs and
-   opens them; pressing Enter in the box clicks the Search button. Typing
-   itself isn't logged.                                                     */
+   data-route like every other control, so the click listener above opens
+   them; pressing Enter in the box clicks the Search button.              */
 const searchForm = document.getElementById("search");
 const searchInput = document.getElementById("search-input");
 const searchButton = document.getElementById("search-go");
@@ -532,7 +629,7 @@ function showSuggestions() {
   suggestionList.innerHTML = top.map(({ game }, i) =>
     `<li role="option" id="suggestion-${i}" data-log="Suggestion: ${esc(game.name)}" data-route="${searchRoute(q, game.id)}"
       data-type="suggestion">${esc(game.name)}</li>`).join("") +
-    `<li role="option" id="suggestion-${top.length}" data-log="${esc(`Search: "${q}"`)}" data-route="${searchRoute(q)}"
+    `<li role="option" id="suggestion-${top.length}" class="see-all" data-log="${esc(`Search: "${q}"`)}" data-route="${searchRoute(q)}"
       data-type="search">See all results for "${esc(q)}"</li>`;
   suggestionList.hidden = false;
   searchInput.setAttribute("aria-expanded", "true");
@@ -563,7 +660,6 @@ searchForm.addEventListener("click", e => { if (e.target.closest("[data-log]")) 
 searchForm.addEventListener("submit", e => e.preventDefault());
 
 window.addEventListener("hashchange", render);
-saveLog();
 render();
 </script>
 <script src="tree-test.js"></script>

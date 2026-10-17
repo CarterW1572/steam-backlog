@@ -337,9 +337,6 @@
 
   function showUI() {
     clearUI();
-    // Participants shouldn't see the click-log controls.
-    document.querySelector("footer").hidden = true;
-    document.getElementById("log-panel").hidden = true;
     if (!SEARCH_IN_TEST) document.getElementById("search").hidden = true;
     if (!session) {
       if (tab && tab.pending) showReady();
@@ -544,7 +541,9 @@
     // Opening the results page releases a tab that was showing the thank-you.
     if (tab && tab.thanks) { tab = null; saveTab(); }
     window.removeEventListener("hashchange", render);
-    ["header", "#crumbs", "footer"].forEach(sel => (document.querySelector(sel).hidden = true));
+    ["header", "#crumbs"].forEach(sel => (document.querySelector(sel).hidden = true));
+    // The results page keeps the plain wireframe look, not the site's design.
+    document.body.classList.add("tt-plain");
     buildResults();
   } else if (tab) {
     // Tasks always start on the home page.
