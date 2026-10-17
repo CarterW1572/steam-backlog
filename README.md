@@ -6,16 +6,24 @@ Click-through prototype for organizing a game backlog. The categories and labels
 
 | View | Categories | Filters (checkboxes) | Leaf |
 |---|---|---|---|
-| By Genre | Competitive Multiplayer, Racing, Action & Adventure, Build & Strategize | Players (Singleplayer, Multiplayer); Audience (Family-Friendly, Mature) | Game placeholder page |
-| By How You Play | Singleplayer, Online Multiplayer, Couch & Local | Genre (the four genres); Audience (Family-Friendly, Mature) | Game placeholder page |
+| By Genre | Competitive Multiplayer, Racing, Action & Adventure, Build & Strategize | Players (Singleplayer, Multiplayer); Audience (Family-Friendly, Mature) | Game page |
+| By How You Play | Singleplayer, Online Multiplayer, Couch & Local | Genre (the four genres); Audience (Family-Friendly, Mature) | Game page |
 
 The home page shows both views as sections. Each category opens a list of its games, with filters on the left. Within a group, checked filters are combined with OR; across groups, with AND. Filters are saved in the URL, so Back from a game page keeps them, and opening a different category starts with no filters. All 25 games can be reached in both views.
 
+## Game pages
+
+Each game page shows the game's cover art, a short description, its tags, and the platforms it's on with a price for each. These details are in `game-details.js`, keyed by game id, and merged into the game list in `index.html`, so each fact is stored once.
+
+- **Cover art** is linked from the official stores (Steam, Nintendo, PlayStation, Epic, Xbox), not stored in the repo. If an image doesn't load, the game's initials show instead.
+- **Tags** on the page are every category the game belongs to (genre, players, how you play, audience), plus store-style tags such as Open World, Souls-like or Battle Royale.
+- **Platforms** include every platform the game came out on. Prices are US list prices for the standard edition on each platform's official store, not sale prices, checked in October 2026. Platforms where it can't be bought anymore say "No longer sold". Update `PRICES_CHECKED` in `game-details.js` when you recheck them.
+
 ## Search
 
-The search box in the header searches the same 25 games; nothing is copied. A game matches on its name, a nickname (`gta`, `civ 7`, `totk`), or the labels of its genre, players, play style and audience, plus synonyms for those labels (`kids` for Family-Friendly, `couch` for Couch & Local, `shooter` for Competitive Multiplayer). Misspellings after the first letter are allowed (`zelad`, `minecarft`), and unfinished words match as you type. Every word has to match; words that match no game are ignored and listed on the results page. If no game matches every word, the page shows games that match some of them.
+The search box in the header searches the same 25 games; nothing is copied. A game matches on its name, a nickname (`gta`, `civ 7`, `totk`), its store tags (`souls like`, `moba`, `cozy`), or the labels of its genre, players, play style and audience, plus synonyms for those labels and tags (`kids` for Family-Friendly, `couch` for Couch & Local, `shooter` for FPS). Misspellings after the first letter are allowed (`zelad`, `minecarft`), and unfinished words match as you type. Every word has to match; words that match no game are ignored and listed on the results page. If no game matches every word, the page shows games that match some of them.
 
-Suggestions appear under the box as you type (arrow keys and Enter, or click). Enter or Search opens the results page at `#/search?q=...`, and a game opened from there keeps the query, so Back returns to the results. Synonyms and nicknames are at the top of the search section in `index.html`. Tree test participants don't see the search box unless `SEARCH_IN_TEST` in `tree-test.js` is set to true.
+Suggestions appear under the box as you type (arrow keys and Enter, or click). Enter or Search opens the results page at `#/search?q=...`, and a game opened from there keeps the query, so Back returns to the results. Synonyms, tag synonyms and nicknames are at the top of the search section in `index.html`. Tree test participants don't see the search box unless `SEARCH_IN_TEST` in `tree-test.js` is set to true.
 
 ## Visual design
 

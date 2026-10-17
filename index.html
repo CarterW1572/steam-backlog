@@ -100,9 +100,11 @@
   .game-card .card-title { font-size: 16px; }
   .card-body { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px 18px; }
   .card-note { font-size: 13px; color: var(--muted); }
-  /* Mostly shade, so a page of covers doesn't outweigh the accent title. */
-  .cover { display: grid; place-items: center; aspect-ratio: 2 / 1; background: linear-gradient(150deg, var(--base) -60%, var(--shade) 75%);
+  /* Cover art fills the box; the initials behind it show while it loads or if it fails. */
+  .cover { position: relative; overflow: hidden; display: grid; place-items: center; aspect-ratio: 2 / 1;
+    background: linear-gradient(150deg, var(--base) -60%, var(--shade) 75%);
     color: var(--tint); font-size: 28px; font-weight: 800; letter-spacing: 0.04em; }
+  .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag { padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--muted); }
 
@@ -119,12 +121,23 @@
   .empty { padding: 40px 24px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); text-align: center; }
 
   /* Game page */
-  .detail { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; margin-bottom: 32px; }
+  /* Cover and About on the left; platforms and prices on the right, like a store's buy box. */
+  .detail { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; align-items: start; margin-bottom: 32px; }
+  .detail-main { display: flex; flex-direction: column; gap: 24px; }
   .cover-large { border-radius: var(--radius); font-size: 64px; }
-  .detail .panel { display: flex; flex-direction: column; gap: 12px; }
-  .detail .panel-title { margin-bottom: 0; }
-  .skeleton { height: 10px; border-radius: 999px; background: var(--line); }
-  .via { margin-top: auto; padding-top: 12px; font-size: 14px; color: var(--muted); }
+  .platforms { list-style: none; }
+  .platforms li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 10px 0;
+    border-top: 1px solid var(--line); }
+  .platforms li:first-child { border-top: 0; padding-top: 0; }
+  .platform { display: flex; flex-direction: column; font-size: 15px; font-weight: 500; }
+  .platform-note { font-size: 13px; font-weight: 400; color: var(--muted); }
+  .price { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .price.unavailable { font-weight: 400; color: var(--muted); }
+  .fine-print { margin-top: 16px; font-size: 13px; color: var(--muted); }
+  .description { max-width: 68ch; font-size: 16px; line-height: 1.6; }
+  .sub-title { margin: 24px 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .about .tag { font-size: 13px; padding: 4px 12px; color: var(--text); }
+  .via { margin-top: 24px; font-size: 14px; color: var(--muted); }
   .btn-secondary { padding: 10px 20px; border: 1px solid var(--base); border-radius: 999px; font-weight: 600; }
   .btn-secondary:hover { background: var(--base); }
 
@@ -196,6 +209,7 @@
 
 <main class="container" id="main"></main>
 
+<script src="game-details.js"></script>
 <script>
 /* ---------- Information blocks (the 25 card-sort cards) ----------
    genre:    one of the four report categories
@@ -232,7 +246,12 @@ const GAMES = [
   { name: "Minecraft",                   genre: "build",       players:  ["single", "multi"], play: ["single", "online"],         audience: "family" },
   { name: "Civilization VII",            genre: "build",       players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
   { name: "Animal Crossing",             genre: "build",       players:  ["single"],          play: ["single"],                   audience: "family" },
-].map(g => ({ ...g, id: g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") }));
+].map(g => {
+  const id = g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  // Cover image, description, tags and platforms come from game-details.js.
+  if (!DETAILS[id]) console.warn(`No details for "${g.name}" (id ${id}) in game-details.js`);
+  return { ...g, id, image: "", description: "", tags: [], platforms: [], ...DETAILS[id] };
+});
 
 /* ---------- Two categorizations over the same blocks ----------
    Each view has one level of categories; everything else is a checkbox
@@ -294,8 +313,8 @@ function gamesIn(view, cat, active) {
 
 /* ---------- Search ----------
    Keyword search over the same GAMES. A game is found by its name, a nickname,
-   or the labels of its genre, players, play style and audience (taken from the
-   structures above), plus the synonyms below for those labels. Words can be
+   its store tags, or the labels of its genre, players, play style and audience
+   (taken from the structures above), plus the synonyms below for those labels. Words can be
    misspelled (edit distance) or unfinished (prefix), for suggestions as you type.
    Every word has to match; words that match no game at all are ignored.        */
 const ATTRIBUTES = {
@@ -306,10 +325,12 @@ const ATTRIBUTES = {
 };
 const SYNONYMS = {
   genre: {
-    competitive: "pvp versus vs esports shooter shooters fps moba arena battle royale fighting fighter ranked tactical team",
-    racing:      "race races racer cars car driving drive kart karts motorsport speed track",
-    action:      "adventure story rpg roleplaying openworld exploration explore quest fantasy hero superhero combat platformer soulslike boss bosses",
-    build:       "building builder strategy strategic crafting craft sandbox simulation sim creative create empire turnbased turn city colony management cozy relaxing chill",
+    // General words only: specific kinds of game (shooter, MOBA, souls-like,
+    // sandbox...) are store tags in game-details.js, so they find just those games.
+    competitive: "pvp versus vs esports ranked",
+    racing:      "race races racer cars car driving drive motorsport speed track",
+    action:      "adventure quest combat",
+    build:       "building builder strategy strategic creative create",
   },
   players: {
     single: "singleplayer solo alone offline",
@@ -325,6 +346,11 @@ const SYNONYMS = {
     mature: "adult adults violent violence gore gory dark gritty",
   },
 };
+// Other words for store tags.
+const TAG_SYNONYMS = {
+  "FPS": "shooter firstperson", "MOBA": "battle arena", "Cozy": "chill", "Life Sim": "simulation sim",
+  "Kart Racing": "karts", "Souls-like": "soulslike", "Hack and Slash": "hackandslash",
+};
 // Nicknames people type instead of the full name, by game id.
 const ALIASES = {
   "counter-strike-2": "cs cs2 csgo", "team-fortress-2": "tf2", "league-of-legends": "lol league",
@@ -335,6 +361,7 @@ const ALIASES = {
   "civilization-vii": "civ civ7", "animal-crossing": "acnh", "minecraft": "mc",
 };
 Object.keys(ALIASES).forEach(id => { if (!byId(GAMES, id)) console.warn(`Search: no game with id "${id}"`); });
+Object.keys(DETAILS).forEach(id => { if (!byId(GAMES, id)) console.warn(`game-details.js: no game with id "${id}"`); });
 
 const STOPWORDS = new Set("a an the and or of to for in on with my me i im want looking some something game games play playing that where you like is it can".split(" "));
 const ROMAN = { ii: "2", iii: "3", iv: "4", v: "5", vi: "6", vii: "7", viii: "8", ix: "9" };
@@ -372,7 +399,8 @@ function wordMatch(q, w, minPrefix) {
   return 0;
 }
 
-// Per game: its name and nicknames (weighted higher), then one field per attribute value.
+// Per game: its name and nicknames (weighted higher), then one field per
+// attribute value and one per store tag (from game-details.js).
 const SEARCH_INDEX = GAMES.map(g => ({
   game: g,
   fields: [
@@ -381,6 +409,7 @@ const SEARCH_INDEX = GAMES.map(g => ({
       words: [...indexWords(byId(options, id).label), ...split(SYNONYMS[attr][id] || "")],
       weight: 1, minPrefix: 3, label: byId(options, id).label,
     }))),
+    ...g.tags.map(tag => ({ words: [...indexWords(tag), ...split(TAG_SYNONYMS[tag] || "")], weight: 1, minPrefix: 3, label: tag })),
   ],
 }));
 
@@ -455,19 +484,28 @@ function categoryCard(label, route, count) {
   </button>`;
 }
 
-// Stand-in cover art until there are real images: the game's initials.
+// The game's initials sit under the cover image and show if it's missing or fails to load.
 const initials = name => name.split(/[\s:-]+/).filter(w => /^[A-Za-z]/.test(w) && !/^(the|of)$/i.test(w))
   .slice(0, 2).map(w => w[0].toUpperCase()).join("");
 
-const gameTags = g => [byId(GENRES, g.genre).label, byId(AUDIENCE.options, g.audience).label]
-  .map(t => `<span class="tag">${esc(t)}</span>`).join("");
+function cover(game, cls, alt) {
+  return `<span class="cover${cls ? " " + cls : ""}"><span aria-hidden="true">${initials(game.name)}</span>${game.image
+    ? `<img src="${esc(game.image)}" alt="${esc(alt)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</span>`;
+}
+
+const tagList = labels => labels.map(t => `<span class="tag">${esc(t)}</span>`).join("");
+
+// Cards show genre and audience; the game page shows every category the game is in.
+const cardTags = g => tagList([byId(GENRES, g.genre).label, byId(AUDIENCE.options, g.audience).label]);
+const categoryLabels = g => [...new Set(Object.entries(ATTRIBUTES)
+  .flatMap(([attr, options]) => [].concat(g[attr]).map(id => byId(options, id).label)))];
 
 function gameCard(game, route, note) {
   return `<button class="card game-card" data-log="${esc(game.name)}" data-route="${route}" data-type="game">
-    <span class="cover" aria-hidden="true">${initials(game.name)}</span>
+    ${cover(game, "", "")}
     <span class="card-body">
       <span class="card-title">${esc(game.name)}</span>
-      <span class="tags">${gameTags(game)}</span>
+      <span class="tags">${cardTags(game)}</span>
       ${note ? `<span class="card-note">${note}</span>` : ""}
     </span>
   </button>`;
@@ -478,16 +516,25 @@ function backButton(label, route) {
 }
 
 function gamePage(game, crumbs, eyebrow, back) {
-  return `${pageHead(eyebrow, game.name, `<span class="tags">${gameTags(game)}</span>`)}
+  const platforms = game.platforms.map(([name, price, note]) => `<li>
+      <span class="platform">${esc(name)}${note ? `<span class="platform-note">${esc(note)}</span>` : ""}</span>
+      <span class="price${/^\$|^Free/.test(price) ? "" : " unavailable"}">${esc(price)}</span>
+    </li>`).join("");
+  return `${pageHead(eyebrow, game.name, `<span class="tags">${tagList(categoryLabels(game))}</span>`)}
     <div class="detail">
-      <div class="cover cover-large" aria-hidden="true">${initials(game.name)}</div>
-      <section class="panel" aria-label="Game details">
-        <h2 class="panel-title">About this game</h2>
-        <p class="muted">[ Game details placeholder ]</p>
-        <div class="skeleton" style="width: 92%"></div>
-        <div class="skeleton" style="width: 78%"></div>
-        <div class="skeleton" style="width: 85%"></div>
-        <p class="via">Found via ${crumbs.slice(1).map(c => esc(c[0])).join(" › ")}</p>
+      <div class="detail-main">
+        ${cover(game, "cover-large", `${game.name} cover art`)}
+        <section class="panel about" aria-labelledby="about-title">
+          <h2 class="panel-title" id="about-title">About this game</h2>
+          <p class="description">${esc(game.description || "No description yet.")}</p>
+          ${game.tags.length ? `<h3 class="sub-title">Tags</h3><div class="tags">${tagList(game.tags)}</div>` : ""}
+          <p class="via">Found via ${crumbs.slice(1).map(c => esc(c[0])).join(" › ")}</p>
+        </section>
+      </div>
+      <section class="panel" aria-labelledby="platforms-title">
+        <h2 class="panel-title" id="platforms-title">Platforms and prices</h2>
+        ${platforms ? `<ul class="platforms">${platforms}</ul>` : `<p class="muted">No platform information yet.</p>`}
+        <p class="fine-print">US list prices for the standard edition, checked ${PRICES_CHECKED}. Sale prices may be lower.</p>
       </section>
     </div>
     ${back}`;
