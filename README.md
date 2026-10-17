@@ -1,15 +1,27 @@
 # Video Game Finder
 
-Click-through prototype for organizing a game backlog. The categories and labels come from our card sort (8 participants, 25 cards).
+Click-through prototype for finding a game to play. The categories and labels come from our card sort (8 participants, 25 cards); the site now has 75 games, with 50 popular titles added to balance the categories.
 
-## Two views of the same 25 blocks
+## Two views of the same 75 games
 
 | View | Categories | Filters (checkboxes) | Leaf |
 |---|---|---|---|
 | By Genre | Competitive Multiplayer, Racing, Action & Adventure, Build & Strategize | Players (Singleplayer, Multiplayer); Audience (Family-Friendly, Mature) | Game page |
 | By How You Play | Singleplayer, Online Multiplayer, Couch & Local | Genre (the four genres); Audience (Family-Friendly, Mature) | Game page |
 
-The home page shows both views as sections. Each category opens a list of its games, with filters on the left. Within a group, checked filters are combined with OR; across groups, with AND. Filters are saved in the URL, so Back from a game page keeps them, and opening a different category starts with no filters. All 25 games can be reached in both views.
+The home page shows both views as sections. Each category opens a list of its games, with filters on the left. Within a group, checked filters are combined with OR; across groups, with AND. Filters are saved in the URL, so Back from a game page keeps them, and opening a different category starts with no filters. All 75 games can be reached in both views.
+
+| Category | Games |
+|---|---|
+| Competitive Multiplayer | 18 |
+| Racing | 18 |
+| Action & Adventure | 18 |
+| Build & Strategize | 21 |
+| Singleplayer | 62 |
+| Online Multiplayer | 51 |
+| Couch & Local | 17 |
+
+A game can be in more than one How You Play category. 46 games are Family-Friendly and 29 are Mature.
 
 ## Game pages
 
@@ -21,7 +33,7 @@ Each game page shows the game's cover art, a short description, its tags, and th
 
 ## Search
 
-The search box in the header searches the same 25 games; nothing is copied. A game matches on its name, a nickname (`gta`, `civ 7`, `totk`), its store tags (`souls like`, `moba`, `cozy`), or the labels of its genre, players, play style and audience, plus synonyms for those labels and tags (`kids` for Family-Friendly, `couch` for Couch & Local, `shooter` for FPS). Misspellings after the first letter are allowed (`zelad`, `minecarft`), and unfinished words match as you type. Every word has to match; words that match no game are ignored and listed on the results page. If no game matches every word, the page shows games that match some of them.
+The search box in the header searches the same 75 games; nothing is copied. A game matches on its name, a nickname (`gta`, `civ 7`, `totk`), its store tags (`souls like`, `moba`, `cozy`), or the labels of its genre, players, play style and audience, plus synonyms for those labels and tags (`kids` for Family-Friendly, `couch` for Couch & Local, `shooter` for FPS). Misspellings after the first letter are allowed (`zelad`, `minecarft`), and unfinished words match as you type. Every word has to match; words that match no game are ignored and listed on the results page. If no game matches every word, the page shows games that match some of them.
 
 Suggestions appear under the box as you type (arrow keys and Enter, or click). Enter or Search opens the results page at `#/search?q=...`, and a game opened from there keeps the query, so Back returns to the results. Synonyms, tag synonyms and nicknames are at the top of the search section in `index.html`. Tree test participants don't see the search box unless `SEARCH_IN_TEST` in `tree-test.js` is set to true.
 
