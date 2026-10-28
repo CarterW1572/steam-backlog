@@ -115,26 +115,28 @@
   .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   .cat-card { position: relative; overflow: hidden; isolation: isolate; justify-content: space-between; gap: 24px;
     min-height: 136px; padding: 20px; }
-  /* The category name sits on a solid label, like a store's category tiles, so it
-     reads clearly over any cover art, blurred or sharp. */
-  .cat-card .card-title { align-self: flex-start; padding: 5px 12px; border-radius: 8px;
-    background: rgb(14 14 17 / 0.85); color: var(--soft); font-size: 16px; font-weight: 700;
-    box-shadow: 0 4px 16px rgb(0 0 0 / 0.4); }
-  .cat-card .card-meta, .cat-card .card-arrow { padding: 2px 10px; border-radius: 999px; background: rgb(14 14 17 / 0.75); color: var(--text); }
-  .cat-card .card-arrow { font-size: 16px; line-height: 22px; }
-  .card-foot { display: flex; align-items: center; justify-content: space-between; }
+  /* Each category card has its own hue (--hue, set on the card from GENRES and PLAY_STYLES)
+     for its edge, in place of the shared purple; hovering brightens the edge. */
+  .cat-card { border-color: hsl(var(--hue) 45% 32%); border-top-color: hsl(var(--hue) 60% 50%); }
+  .cat-card:hover { border-color: hsl(var(--hue) 75% 60%); }
+  /* The category name and game count sit right on the art. They stay readable over any
+     cover thanks to the dark wash behind them (::after, deepest at the top, bottom and left,
+     where the text is) and a soft shadow around the letters. */
+  .cat-card .card-title, .cat-card .card-meta { color: #fff;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.9), 0 0 12px rgb(0 0 0 / 0.75); }
+  .cat-card .card-title { font-size: 18px; font-weight: 700; }
+  .cat-card .card-meta { font-weight: 500; }
   /* Category art: a tilted collage of covers from the category, slightly soft until the
      card is hovered or focused, then sharp. It's kept bright, since it's most of the home
-     page's color; the dark wash and the labels' solid backs keep the text readable. */
+     page's color. */
   .cat-art { position: absolute; inset: -20%; z-index: -1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
     transform: rotate(-8deg); filter: blur(2px) brightness(0.9);
     transition: filter 0.3s, transform 0.3s; }
   .cat-art img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; background: var(--base); }
   .cat-card::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-    background: linear-gradient(rgb(0 0 0 / 0.6), rgb(0 0 0 / 0.1) 50%, rgb(0 0 0 / 0.65)); }
+    background: linear-gradient(90deg, rgb(0 0 0 / 0.45), transparent 70%),
+      linear-gradient(rgb(0 0 0 / 0.65), rgb(0 0 0 / 0.1) 50%, rgb(0 0 0 / 0.7)); }
   .cat-card:hover .cat-art, .cat-card:focus-visible .cat-art { filter: none; transform: rotate(-8deg) scale(1.05); }
-  .card-arrow { color: var(--tint); font-size: 20px; transition: transform 0.15s; }
-  .cat-card:hover .card-arrow { transform: translateX(4px); }
 
   .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; align-content: start; }
   .game-card { overflow: hidden; }
@@ -502,17 +504,19 @@ const PLAYERS = {
 };
 // Console comes first in every filter panel: it was the most-asked-for filter.
 const CONSOLE = { label: "Console", options: CONSOLES.map(c => ({ ...c, test: g => g.consoles.includes(c.id) })) };
+// hue tints the category's home-page card edge; picked by eye to match the category's
+// cover art and to differ within each view.
 const GENRES = [
-  { id: "competitive", label: "Competitive Multiplayer" },
-  { id: "racing",      label: "Racing" },
-  { id: "action",      label: "Action & Adventure" },
-  { id: "build",       label: "Build & Strategize" },
+  { id: "competitive", label: "Competitive Multiplayer", hue: 25 },
+  { id: "racing",      label: "Racing",                  hue: 355 },
+  { id: "action",      label: "Action & Adventure",      hue: 175 },
+  { id: "build",       label: "Build & Strategize",      hue: 125 },
 ];
 const GENRE = { label: "Genre", options: GENRES.map(c => ({ ...c, test: g => g.genre.includes(c.id) })) };
 const PLAY_STYLES = [
-  { id: "single", label: "Singleplayer",       short: "Solo" },
-  { id: "online", label: "Online Multiplayer", short: "Online" },
-  { id: "local",  label: "Couch & Local",      short: "Couch & local" },
+  { id: "single", label: "Singleplayer",       short: "Solo",          hue: 210 },
+  { id: "online", label: "Online Multiplayer", short: "Online",        hue: 25 },
+  { id: "local",  label: "Couch & Local",      short: "Couch & local", hue: 330 },
 ];
 // Game types group the store tags in game-details.js (129 different ones, half used
 // by a single game) into kinds of game people filter by. A game can be several.
@@ -807,11 +811,11 @@ function categoryArt(games) {
     `<img src="${esc(g.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`).join("")}</span>`;
 }
 
-function categoryCard(label, route, games) {
-  return `<button class="card cat-card" data-log="${esc(label)}" data-route="${route}" data-type="category">
+function categoryCard(c, route, games) {
+  return `<button class="card cat-card" data-log="${esc(c.label)}" data-route="${route}" data-type="category" style="--hue: ${c.hue}">
     ${categoryArt(games)}
-    <span class="card-title">${esc(label)}</span>
-    <span class="card-foot"><span class="card-meta">${plural(games.length)}</span><span class="card-arrow" aria-hidden="true">→</span></span>
+    <span class="card-title">${esc(c.label)}</span>
+    <span class="card-meta">${plural(games.length)}</span>
   </button>`;
 }
 
@@ -1110,7 +1114,7 @@ function render(keepScroll) {
       </section>` + Object.entries(VIEWS).map(([id, V]) =>
       `<section class="browse" aria-labelledby="view-${id}">
         <h2 class="section-title" id="view-${id}">Browse ${esc(V.label.replace(/^By /, "by "))}</h2>
-        <div class="cat-grid">${V.categories.map(c => categoryCard(c.label, routeTo(`${id}/${c.id}`),
+        <div class="cat-grid">${V.categories.map(c => categoryCard(c, routeTo(`${id}/${c.id}`),
           GAMES.filter(g => V.inCategory(g, c.id)))).join("")}</div>
       </section>`).join("");
   } else {
