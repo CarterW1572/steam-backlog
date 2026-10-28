@@ -213,6 +213,10 @@
       track("filter", `${node.dataset.log} (${node.checked ? "on" : "off"})`);
       return;
     }
+    if (type === "clear-filters" || type === "sort") {
+      track(type === "sort" ? "sort" : "filter", node.dataset.log);
+      return;
+    }
     expected = node.dataset.route;
     track(type, node.dataset.log, pageName(node.dataset.route));
     if (gamePicked(type, node.dataset.log) === currentTask().target) {
