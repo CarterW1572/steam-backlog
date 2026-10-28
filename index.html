@@ -69,12 +69,12 @@
   .crumbs button:hover { text-decoration: underline; }
   .crumbs .sep { margin: 0 8px; }
   .crumbs .current { color: var(--text); }
+  .crumbs.empty-crumbs { display: none; }
 
   /* Type scale: hero 40, page title 36, section 22, card 18/16, body 16, meta 14/13, label 12 */
   #main { padding-top: 28px; padding-bottom: 72px; }
   .hero { margin-bottom: 48px; }
   .hero-title { font-size: 40px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; color: var(--soft); }
-  .hero-sub { max-width: 64ch; margin-top: 10px; font-size: 17px; color: var(--muted); }
   .page-head { margin-bottom: 32px; }
   .eyebrow { margin-bottom: 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .page-title { font-size: 36px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; color: var(--accent); }
@@ -1047,8 +1047,6 @@ function render(keepScroll) {
   } else if (!cat) {
     html = `<section class="hero">
         <h1 class="hero-title">Find a game to play</h1>
-        <p class="hero-sub">Browse by genre or by how you play, then narrow the list by console, players and audience.
-          Or search for a game, genre or console from the box at the top.</p>
       </section>` + Object.entries(VIEWS).map(([id, V]) =>
       `<section class="browse" aria-labelledby="view-${id}">
         <h2 class="section-title" id="view-${id}">Browse ${esc(V.label.replace(/^By /, "by "))}</h2>
@@ -1059,7 +1057,8 @@ function render(keepScroll) {
     const V = VIEWS[view];
     const listRoute = routeTo(`${view}/${cat.id}`, active, sort);
     const game = gameId && GAMES.find(g => g.id === gameId && V.inCategory(g, cat.id));
-    crumbs.push([V.label, null], [cat.label, listRoute]);
+    // The view ("By Genre") isn't a page the user clicked through, so it shows above the title, not here.
+    crumbs.push([cat.label, listRoute]);
 
     if (game) {
       crumbs.push([game.name, null]);
@@ -1080,7 +1079,10 @@ function render(keepScroll) {
 
   main.innerHTML = html;
   const sep = `<span class="sep" aria-hidden="true">›</span>`;
-  document.getElementById("crumbs").innerHTML = crumbs
+  // Breadcrumbs start once the user leaves the home page; "Home" alone says nothing.
+  const crumbNav = document.getElementById("crumbs");
+  crumbNav.classList.toggle("empty-crumbs", crumbs.length === 1);
+  crumbNav.innerHTML = crumbs.length === 1 ? "" : crumbs
     .map(([label, route], i) => i === crumbs.length - 1
       ? `<span class="current" aria-current="page">${esc(label)}</span>`
       : (route
