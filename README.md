@@ -88,7 +88,10 @@ Then open http://localhost:8356.
 
 ## Run online
 
-https://carterw1572.github.io/steam-backlog/
+https://carterw1572.github.io/steam-backlog/ (the `main` branch, once GitHub Pages has rebuilt)
+
+Preview of the `marco/website-updates` branch, with the talk-aloud study changes, before it's merged:
+https://raw.githack.com/carterw1572/steam-backlog/marco/website-updates/index.html
 
 ## Tree Test links
 
