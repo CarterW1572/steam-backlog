@@ -23,6 +23,7 @@
     --bg:     #0e0e11;
     --line:   #2c2c33;
     --text:   #f2f2f2;
+    --soft:   hsl(265 15% 80%); /* a softer, slightly purple white for large home-page headings */
     --muted:  #a3a3ab;
     --on-accent: #17130a;
     --radius: 16px;
@@ -30,7 +31,7 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font: 16px/1.5 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
-  button, input { font: inherit; color: inherit; }
+  button, input, select { font: inherit; color: inherit; }
   button { background: none; border: 0; cursor: pointer; text-align: left; }
   :focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
   [hidden] { display: none !important; }
@@ -72,7 +73,8 @@
   /* Type scale: hero 40, page title 36, section 22, card 18/16, body 16, meta 14/13, label 12 */
   #main { padding-top: 28px; padding-bottom: 72px; }
   .hero { margin-bottom: 48px; }
-  .hero-title { font-size: 40px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; }
+  .hero-title { font-size: 40px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; color: var(--soft); }
+  .hero-sub { max-width: 64ch; margin-top: 10px; font-size: 17px; color: var(--muted); }
   .page-head { margin-bottom: 32px; }
   .eyebrow { margin-bottom: 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .page-title { font-size: 36px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; color: var(--accent); }
@@ -90,8 +92,24 @@
 
   /* Four columns on the home page, so both views' cards line up in the same columns. */
   .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-  .cat-card { justify-content: space-between; gap: 24px; min-height: 136px; padding: 20px; }
+  .cat-card { position: relative; overflow: hidden; isolation: isolate; justify-content: space-between; gap: 24px;
+    min-height: 136px; padding: 20px; }
+  /* The category name sits on a solid label, like a store's category tiles, so it
+     reads clearly over any cover art, blurred or sharp. */
+  .cat-card .card-title { align-self: flex-start; padding: 5px 12px; border-radius: 8px;
+    background: rgb(14 14 17 / 0.85); color: var(--soft); font-size: 16px; font-weight: 700;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.4); }
+  .cat-card .card-meta { padding: 2px 10px; border-radius: 999px; background: rgb(14 14 17 / 0.75); color: var(--text); }
   .card-foot { display: flex; align-items: center; justify-content: space-between; }
+  /* Category art: a tilted collage of covers from the category, blurred and dim until
+     the card is hovered or focused, then sharp. The dark wash keeps the label readable. */
+  .cat-art { position: absolute; inset: -20%; z-index: -1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    transform: rotate(-8deg); filter: blur(5px) brightness(0.75) saturate(0.9);
+    transition: filter 0.3s, transform 0.3s; }
+  .cat-art img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; background: var(--base); }
+  .cat-card::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(rgb(0 0 0 / 0.6), rgb(0 0 0 / 0.1) 50%, rgb(0 0 0 / 0.65)); }
+  .cat-card:hover .cat-art, .cat-card:focus-visible .cat-art { filter: none; transform: rotate(-8deg) scale(1.05); }
   .card-arrow { color: var(--tint); font-size: 20px; transition: transform 0.15s; }
   .cat-card:hover .card-arrow { transform: translateX(4px); }
 
@@ -100,6 +118,11 @@
   .game-card .card-title { font-size: 16px; }
   .card-body { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px 18px; }
   .card-note { font-size: 13px; color: var(--muted); }
+  /* What a card says about a game at a glance: where it plays, how many can play, and the price. */
+  .card-facts { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--muted); }
+  .card-facts b { font-weight: 600; color: var(--text); }
+  .card-price { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tag.type { border-color: var(--base); color: var(--text); }
   /* Cover art fills the box; the initials behind it show while it loads or if it fails. */
   .cover { position: relative; overflow: hidden; display: grid; place-items: center; aspect-ratio: 2 / 1;
     background: linear-gradient(150deg, var(--base) -60%, var(--shade) 75%);
@@ -112,18 +135,62 @@
   .layout { display: grid; grid-template-columns: 240px 1fr; gap: 32px; align-items: start; }
   .panel { padding: 20px; border-radius: var(--radius); background: var(--shade); }
   .panel-title { margin-bottom: 16px; font-size: 16px; font-weight: 700; }
-  .filters { position: sticky; top: 96px; }
+  /* The panel stays in view while the games scroll; when it's taller than the window it
+     scrolls on its own, with a thin purple scrollbar instead of the system one. */
+  .filters { position: sticky; top: 96px; max-height: calc(100vh - 112px); overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--base) transparent; }
+  .filters::-webkit-scrollbar { width: 6px; }
+  .filters::-webkit-scrollbar-thumb { border-radius: 3px; background: var(--base); }
+  .filters::-webkit-scrollbar-track { background: transparent; }
+  legend .rule { font-weight: 500; letter-spacing: 0.02em; text-transform: none; }
+  /* Applied filters above the games, joined by "or" within a group and "and" across. */
+  .applied { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1 1 300px; padding-top: 8px; font-size: 14px; }
+  .applied-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .applied-label { color: var(--muted); }
+  .joiner { font-size: 13px; color: var(--muted); }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px 4px 12px; border: 1px solid var(--base);
+    border-radius: 999px; font-size: 13px; font-weight: 500; }
+  .chip span { font-size: 15px; line-height: 1; color: var(--tint); }
+  .chip:hover { background: var(--base); }
+  .chip:hover span { color: var(--text); }
+  .panel-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .clear { font-size: 14px; color: var(--tint); }
+  .clear:hover { text-decoration: underline; }
+  /* Sort menu above a list of games: a button that drops down a list of orders. */
+  .list-head { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-start; gap: 12px 24px; margin-bottom: 16px; }
+  .sort-menu { position: relative; flex: none; width: 240px; max-width: 100%; }
+  .sort-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; height: 44px; padding: 0 16px;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--shade); font-size: 15px; font-weight: 600; }
+  .sort-toggle:hover, .sort-toggle[aria-expanded="true"] { border-color: var(--base); }
+  .sort-current { font-weight: 400; color: var(--muted); }
+  .caret { transition: transform 0.15s; }
+  .sort-toggle[aria-expanded="true"] .caret { transform: rotate(180deg); }
+  .sort-list { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 10; list-style: none; overflow: hidden;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--shade); box-shadow: 0 16px 40px rgb(0 0 0 / 0.5); }
+  .sort-list li + li { border-top: 1px solid var(--line); }
+  .sort-list button { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; width: 100%; padding: 11px 16px; font-size: 15px; }
+  .sort-list button:hover, .sort-list button:focus-visible { background: var(--base); outline: none; }
+  .sort-list button[aria-current] { color: var(--accent); font-weight: 600; }
+  .sort-list button[aria-current]:hover, .sort-list button[aria-current]:focus-visible { color: var(--text); }
+  .sort-list .hint { font-size: 13px; font-weight: 400; color: var(--muted); }
+  .sort-list button:hover .hint, .sort-list button:focus-visible .hint { color: var(--text); }
   fieldset { border: none; }
   fieldset + fieldset { margin-top: 20px; }
   legend { margin-bottom: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   fieldset label { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 15px; cursor: pointer; }
-  fieldset input { width: 18px; height: 18px; accent-color: var(--base); cursor: pointer; }
+  fieldset input { flex: none; width: 18px; height: 18px; accent-color: var(--base); cursor: pointer; }
+  fieldset .count { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  fieldset label.none { opacity: 0.4; cursor: default; }
+  fieldset label.none input { cursor: default; }
   .empty { padding: 40px 24px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); text-align: center; }
 
   /* Game page */
   /* Cover and About on the left; platforms and prices on the right, like a store's buy box. */
   .detail { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; align-items: start; margin-bottom: 32px; }
-  .detail-main { display: flex; flex-direction: column; gap: 24px; }
+  .detail-main, .detail-side { display: flex; flex-direction: column; gap: 24px; }
+  .facts { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; font-size: 15px; }
+  .facts dt { color: var(--muted); }
+  .facts dd { font-weight: 500; }
   .cover-large { border-radius: var(--radius); font-size: 64px; }
   .platforms { list-style: none; }
   .platforms li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 10px 0;
@@ -137,6 +204,8 @@
   .description { max-width: 68ch; font-size: 16px; line-height: 1.6; }
   .sub-title { margin: 24px 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .about .tag { font-size: 13px; padding: 4px 12px; color: var(--text); }
+  .tag-link { transition: border-color 0.15s, background 0.15s; }
+  .tag-link:hover { border-color: var(--base); background: var(--base); color: var(--text); }
   .via { margin-top: 24px; font-size: 14px; color: var(--muted); }
   .btn-secondary { padding: 10px 20px; border: 1px solid var(--base); border-radius: 999px; font-weight: 600; }
   .btn-secondary:hover { background: var(--base); }
@@ -147,7 +216,9 @@
   }
   @media (max-width: 700px) {
     .layout { grid-template-columns: 1fr; }
-    .filters { position: static; }
+    .filters { position: static; max-height: none; }
+    /* Two columns of checkboxes, so the filters don't push the games far down. */
+    .filters fieldset { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
   }
   @media (max-width: 600px) {
     :root { --gutter: 16px; }
@@ -197,7 +268,7 @@
   <div class="container header-row">
     <button class="logo" data-log="Home" data-route="#/"><span class="logo-mark" aria-hidden="true">VG</span>Video Game Finder</button>
     <form class="search" id="search" role="search" autocomplete="off">
-      <input id="search-input" type="search" placeholder="Search games, genres, audience" aria-label="Search games"
+      <input id="search-input" type="search" placeholder="Search games, genres, consoles" aria-label="Search games"
         role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-list">
       <button id="search-go" type="submit">Search</button>
       <ul id="search-list" role="listbox" aria-label="Suggestions" hidden></ul>
@@ -212,7 +283,8 @@
 <script src="game-details.js"></script>
 <script>
 /* ---------- Information blocks (the 25 card-sort cards) ----------
-   genre:    one of the four report categories
+   genre:    one of the four report categories, or a list of them. Fighting games
+             are in Action & Adventure too, where talk-aloud participants looked
    players:  Singleplayer / Multiplayer (filter in the Genre view)
    play:     play situation (How You Play view categories)
    audience: Family-Friendly / Mature (filter in both views)                      */
@@ -224,7 +296,7 @@ const GAMES = [
   { name: "Halo Infinite",               genre: "competitive", players:  ["single", "multi"], play: ["single", "online"],         audience: "mature" },
   { name: "League of Legends",           genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "family" },
   { name: "Marvel Rivals",               genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "family" },
-  { name: "Super Smash Bros. Ultimate",  genre: "competitive", players:  ["multi"],           play: ["local"],                    audience: "family" },
+  { name: "Super Smash Bros. Ultimate",  genre: ["competitive", "action"], players: ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
   { name: "Valorant",                    genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "mature" },
   { name: "Apex Legends",                genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "mature" },
   { name: "Overwatch",                   genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "family" },
@@ -232,14 +304,14 @@ const GAMES = [
   { name: "Battlefield 6",               genre: "competitive", players:  ["single", "multi"], play: ["single", "online"],         audience: "mature" },
   { name: "Rocket League",               genre: "competitive", players:  ["multi"],           play: ["online", "local"],          audience: "family" },
   { name: "Dota 2",                      genre: "competitive", players:  ["multi"],           play: ["online"],                   audience: "family" },
-  { name: "Street Fighter 6",            genre: "competitive", players:  ["single", "multi"], play: ["single", "online", "local"], audience: "mature" },
-  { name: "Tekken 8",                    genre: "competitive", players:  ["single", "multi"], play: ["single", "online", "local"], audience: "mature" },
+  { name: "Street Fighter 6",            genre: ["competitive", "action"], players: ["single", "multi"], play: ["single", "online", "local"], audience: "mature" },
+  { name: "Tekken 8",                    genre: ["competitive", "action"], players: ["single", "multi"], play: ["single", "online", "local"], audience: "mature" },
   { name: "EA Sports FC 26",             genre: "competitive", players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
   { name: "Splatoon 3",                  genre: "competitive", players:  ["single", "multi"], play: ["single", "online"],         audience: "family" },
   // Racing
-  { name: "Forza Horizon 5",             genre: "racing",      players:  ["single"],          play: ["single"],                   audience: "family" },
-  { name: "Gran Turismo 7",              genre: "racing",      players:  ["single"],          play: ["single"],                   audience: "family" },
-  { name: "Mario Kart 8 Deluxe",         genre: "racing",      players:  ["multi"],           play: ["local"],                    audience: "family" },
+  { name: "Forza Horizon 5",             genre: "racing",      players:  ["single", "multi"], play: ["single", "online"],         audience: "family" },
+  { name: "Gran Turismo 7",              genre: "racing",      players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
+  { name: "Mario Kart 8 Deluxe",         genre: "racing",      players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
   { name: "Mario Kart World",            genre: "racing",      players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
   { name: "Forza Motorsport",            genre: "racing",      players:  ["single", "multi"], play: ["single", "online"],         audience: "family" },
   { name: "F1 25",                       genre: "racing",      players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
@@ -260,9 +332,9 @@ const GAMES = [
   { name: "Marvel's Spider-Man 2",       genre: "action",      players:  ["single"],          play: ["single"],                   audience: "mature" },
   { name: "The Legend of Zelda: Tears of the Kingdom", genre: "action", players:  ["single"], play: ["single"],                   audience: "family" },
   { name: "Ratchet & Clank",             genre: "action",      players:  ["single"],          play: ["single"],                   audience: "family" },
-  { name: "Baldur's Gate 3",             genre: "action",      players:  ["single", "multi"], play: ["single"],                   audience: "mature" },
+  { name: "Baldur's Gate 3",             genre: "action",      players:  ["single", "multi"], play: ["single", "online", "local"], audience: "mature" },
   { name: "Hollow Knight: Silksong",     genre: "action",      players:  ["single"],          play: ["single"],                   audience: "family" },
-  { name: "Elden Ring",                  genre: "action",      players:  ["single"],          play: ["single"],                   audience: "mature" },
+  { name: "Elden Ring",                  genre: "action",      players:  ["single", "multi"], play: ["single", "online"],         audience: "mature" },
   { name: "Monster Hunter Wilds",        genre: "action",      players:  ["single", "multi"], play: ["single", "online"],         audience: "mature" },
   { name: "God of War",                  genre: "action",      players:  ["single"],          play: ["single"],                   audience: "mature" },
   { name: "Grand Theft Auto V",          genre: "action",      players:  ["single", "multi"], play: ["single", "online"],         audience: "mature" },
@@ -277,7 +349,7 @@ const GAMES = [
   // Build & Strategize
   { name: "Minecraft",                   genre: "build",       players:  ["single", "multi"], play: ["single", "online"],         audience: "family" },
   { name: "Civilization VII",            genre: "build",       players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
-  { name: "Animal Crossing",             genre: "build",       players:  ["single"],          play: ["single"],                   audience: "family" },
+  { name: "Animal Crossing",             genre: "build",       players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
   { name: "Stardew Valley",              genre: "build",       players:  ["single", "multi"], play: ["single", "online", "local"], audience: "family" },
   { name: "The Sims 4",                  genre: "build",       players:  ["single"],          play: ["single"],                   audience: "family" },
   { name: "Cities: Skylines II",         genre: "build",       players:  ["single"],          play: ["single"],                   audience: "family" },
@@ -302,12 +374,39 @@ const GAMES = [
     .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   // Cover image, description, tags and platforms come from game-details.js.
   if (!DETAILS[id]) console.warn(`No details for "${g.name}" (id ${id}) in game-details.js`);
-  return { ...g, id, image: "", description: "", tags: [], platforms: [], ...DETAILS[id] };
+  return { ...g, id, genre: [].concat(g.genre), image: "", description: "", released: "", tags: [], platforms: [], ...DETAILS[id] };
+});
+
+/* ---------- Consoles ----------
+   Where a game can be played today: platforms it's still sold on, plus the
+   consoles that run those versions through backward compatibility (a PS4 game
+   plays on a PS5). Platforms marked "No longer sold" don't count.            */
+const CONSOLES = [
+  { id: "pc",          label: "PC",                    short: "PC",          runs: ["Windows", "Mac", "Linux"] },
+  { id: "ps5",         label: "PlayStation 5",         short: "PS5",         runs: ["PlayStation 5", "PlayStation 4"] },
+  { id: "ps4",         label: "PlayStation 4",         short: "PS4",         runs: ["PlayStation 4"] },
+  { id: "xbox-series", label: "Xbox Series X|S",       short: "Xbox Series", runs: ["Xbox Series X|S", "Xbox One"] },
+  { id: "xbox-one",    label: "Xbox One",              short: "Xbox One",    runs: ["Xbox One"] },
+  { id: "switch-2",    label: "Nintendo Switch 2",     short: "Switch 2",    runs: ["Nintendo Switch 2", "Nintendo Switch"] },
+  { id: "switch",      label: "Nintendo Switch",       short: "Switch",      runs: ["Nintendo Switch"] },
+  { id: "mobile",      label: "Mobile (iOS, Android)", short: "Mobile",      runs: ["iOS", "Android"] },
+];
+const forSale = price => /^\$|^Free/.test(price);
+const priceValue = price => (price === "Free" ? 0 : parseFloat(price.slice(1)));
+GAMES.forEach(g => {
+  const sold = g.platforms.filter(([, price]) => forSale(price));
+  g.consoles = CONSOLES.filter(c => sold.some(([name]) => c.runs.includes(name))).map(c => c.id);
+  // Lowest and highest current price, for the cards and for sorting by price.
+  const prices = sold.map(([, price]) => priceValue(price));
+  g.price = prices.length ? Math.min(...prices) : null;
+  g.maxPrice = prices.length ? Math.max(...prices) : null;
 });
 
 /* ---------- Two categorizations over the same blocks ----------
    Each view has one level of categories; everything else is a checkbox
-   filter on the category's game list (OR within a group, AND across).   */
+   filter on the category's game list (OR within a group, AND across).
+   Option ids are unique within each page's filters, since the URL keeps
+   them in one list.                                                       */
 const AUDIENCE = {
   label: "Audience",
   options: [
@@ -315,64 +414,130 @@ const AUDIENCE = {
     { id: "mature", label: "Mature",          test: g => g.audience === "mature" },
   ],
 };
+const PLAYERS = {
+  label: "Players",
+  options: [
+    { id: "single", label: "Singleplayer", test: g => g.players.includes("single") },
+    { id: "multi",  label: "Multiplayer",  test: g => g.players.includes("multi") },
+  ],
+};
+// Console comes first in every filter panel: it was the most-asked-for filter.
+const CONSOLE = { label: "Console", options: CONSOLES.map(c => ({ ...c, test: g => g.consoles.includes(c.id) })) };
 const GENRES = [
   { id: "competitive", label: "Competitive Multiplayer" },
   { id: "racing",      label: "Racing" },
   { id: "action",      label: "Action & Adventure" },
   { id: "build",       label: "Build & Strategize" },
 ];
+const GENRE = { label: "Genre", options: GENRES.map(c => ({ ...c, test: g => g.genre.includes(c.id) })) };
+const PLAY_STYLES = [
+  { id: "single", label: "Singleplayer",       short: "Solo" },
+  { id: "online", label: "Online Multiplayer", short: "Online" },
+  { id: "local",  label: "Couch & Local",      short: "Couch & local" },
+];
+// Game types group the store tags in game-details.js (129 different ones, half used
+// by a single game) into kinds of game people filter by. A game can be several.
+const hasTag = (g, ...tags) => tags.some(t => g.tags.includes(t));
+const GAME_TYPE = {
+  label: "Game Type",
+  options: [
+    { id: "shooter",    label: "Shooter",              test: g => hasTag(g, "FPS", "Third-Person Shooter", "Hero Shooter", "Arena Shooter", "Battle Royale") },
+    { id: "fighting",   label: "Fighting",             test: g => hasTag(g, "Fighting") },
+    { id: "moba",       label: "Battle Arena (MOBA)",  test: g => hasTag(g, "MOBA") },
+    { id: "sports",     label: "Sports",               test: g => hasTag(g, "Sports") },
+    { id: "party",      label: "Party",                test: g => hasTag(g, "Party") },
+    { id: "arcade",     label: "Arcade & Kart Racing", test: g => hasTag(g, "Kart Racing", "Arcade") },
+    { id: "sim-racing", label: "Racing Sim",           test: g => g.genre.includes("racing") && hasTag(g, "Simulation", "Realistic") },
+    { id: "rpg",        label: "RPG",                  test: g => hasTag(g, "RPG", "Action RPG") },
+    { id: "open-world", label: "Open World",           test: g => hasTag(g, "Open World") },
+    { id: "platformer", label: "Platformer",           test: g => hasTag(g, "Platformer", "2D Platformer", "3D Platformer", "Metroidvania") },
+    { id: "story",      label: "Story-Rich",           test: g => hasTag(g, "Story Rich") },
+    { id: "strategy",   label: "Strategy",             test: g => hasTag(g, "Strategy", "Turn-Based Strategy", "Real-Time Strategy",
+                                                                  "Grand Strategy", "Turn-Based Tactics", "Real-Time Tactics", "4X") },
+    { id: "builder",    label: "City & Base Building", test: g => hasTag(g, "City Builder", "Base Building", "Colony Sim", "Management", "Automation") },
+    { id: "sandbox",    label: "Sandbox & Survival",   test: g => hasTag(g, "Sandbox", "Survival", "Crafting") },
+    { id: "cozy",       label: "Cozy & Life Sim",      test: g => hasTag(g, "Life Sim", "Cozy", "Farming Sim", "Relaxing") },
+  ],
+};
+
+// By the game's lowest current price on any platform (g.price).
+const inRange = (g, min, max) => g.price != null && g.price >= min && g.price < max;
+const PRICE = {
+  label: "Price",
+  options: [
+    { id: "free",     label: "Free to play",   test: g => g.price === 0 },
+    { id: "under-20", label: "Under $20",      test: g => inRange(g, 0.01, 20) },
+    { id: "20-40",    label: "$20 to $40",     test: g => inRange(g, 20, 40) },
+    { id: "40-plus",  label: "$40 and up",     test: g => inRange(g, 40, Infinity) },
+  ],
+};
 
 const VIEWS = {
   genre: {
     label: "By Genre",
     categories: GENRES,
-    inCategory: (g, c) => g.genre === c,
-    filters: [
-      {
-        label: "Players",
-        options: [
-          { id: "single", label: "Singleplayer", test: g => g.players.includes("single") },
-          { id: "multi",  label: "Multiplayer",  test: g => g.players.includes("multi") },
-        ],
-      },
-      AUDIENCE,
-    ],
+    inCategory: (g, c) => g.genre.includes(c),
+    filters: [CONSOLE, GAME_TYPE, PRICE, PLAYERS, AUDIENCE],
   },
   play: {
     label: "By How You Play",
-    categories: [
-      { id: "single", label: "Singleplayer" },
-      { id: "online", label: "Online Multiplayer" },
-      { id: "local",  label: "Couch & Local" },
-    ],
+    categories: PLAY_STYLES,
     inCategory: (g, c) => g.play.includes(c),
-    filters: [
-      { label: "Genre", options: GENRES.map(c => ({ ...c, test: g => g.genre === c.id })) },
-      AUDIENCE,
-    ],
+    filters: [CONSOLE, GENRE, GAME_TYPE, PRICE, AUDIENCE],
   },
 };
 
+// Search results can be narrowed the same way, without going back to a category.
+const SEARCH_FILTERS = [
+  CONSOLE,
+  GENRE,
+  GAME_TYPE,
+  PRICE,
+  { label: "How You Play", options: PLAY_STYLES.map(c => ({ ...c, test: g => g.play.includes(c.id) })) },
+  AUDIENCE,
+];
+
 const byId = (list, id) => list.find(x => x.id === id);
+
+const applyFilters = (games, groups, active, key = x => x) => games.filter(x => groups.every(group => {
+  const on = group.options.filter(o => active.has(o.id));
+  return !on.length || on.some(o => o.test(key(x)));
+}));
 
 function gamesIn(view, cat, active) {
   const V = VIEWS[view];
-  return GAMES.filter(g => V.inCategory(g, cat) && V.filters.every(group => {
-    const on = group.options.filter(o => active.has(o.id));
-    return !on.length || on.some(o => o.test(g));
-  }));
+  return applyFilters(GAMES.filter(g => V.inCategory(g, cat)), V.filters, active);
+}
+
+// Sort orders for game lists. The default ("") keeps the list's own order:
+// the category's order, or best match first for search results. Games without
+// a price or release date go last either way.
+const byName = (a, b) => a.name.localeCompare(b.name);
+const byDate = (a, b) => (!a.released - !b.released) || a.released.localeCompare(b.released);
+const SORTS = [
+  { id: "name",       label: "Name ↑",         hint: "A to Z",        compare: byName },
+  { id: "name-desc",  label: "Name ↓",         hint: "Z to A",        compare: (a, b) => byName(b, a) },
+  { id: "price-low",  label: "Price ↑",        hint: "Low to high",   compare: (a, b) => (a.price ?? Infinity) - (b.price ?? Infinity) || byName(a, b) },
+  { id: "price-high", label: "Price ↓",        hint: "High to low",   compare: (a, b) => (b.price ?? -1) - (a.price ?? -1) || byName(a, b) },
+  { id: "date-old",   label: "Release date ↑", hint: "Oldest first",  compare: (a, b) => byDate(a, b) || byName(a, b) },
+  { id: "date-new",   label: "Release date ↓", hint: "Newest first",
+    compare: (a, b) => (!a.released - !b.released) || b.released.localeCompare(a.released) || byName(a, b) },
+];
+function sortGames(list, sort, key = x => x) {
+  const s = byId(SORTS, sort);
+  return s ? [...list].sort((a, b) => s.compare(key(a), key(b))) : list;
 }
 
 /* ---------- Search ----------
    Keyword search over the same GAMES. A game is found by its name, a nickname,
-   its store tags, or the labels of its genre, players, play style and audience
+   its store tags, the consoles it plays on, or the labels of its genre, players, play style and audience
    (taken from the structures above), plus the synonyms below for those labels. Words can be
    misspelled (edit distance) or unfinished (prefix), for suggestions as you type.
    Every word has to match; words that match no game at all are ignored.        */
 const ATTRIBUTES = {
   genre:    GENRES,
-  players:  VIEWS.genre.filters[0].options,
-  play:     VIEWS.play.categories,
+  players:  PLAYERS.options,
+  play:     PLAY_STYLES,
   audience: AUDIENCE.options,
 };
 const SYNONYMS = {
@@ -397,6 +562,12 @@ const SYNONYMS = {
     family: "familyfriendly kids kid children child everyone wholesome casual cute",
     mature: "adult adults violent violence gore gory dark gritty",
   },
+};
+// Other words for consoles, by console id.
+const CONSOLE_SYNONYMS = {
+  "pc": "computer windows mac linux steam", "ps5": "ps5 ps playstation sony", "ps4": "ps4 ps playstation sony",
+  "xbox-series": "xsx xss seriesx", "xbox-one": "xbone xb1", "switch-2": "switch2 ns2 nintendo",
+  "switch": "ns nintendo", "mobile": "phone iphone ipad tablet",
 };
 // Other words for store tags.
 const TAG_SYNONYMS = {
@@ -468,6 +639,9 @@ const SEARCH_INDEX = GAMES.map(g => ({
       weight: 1, minPrefix: 3, label: byId(options, id).label,
     }))),
     ...g.tags.map(tag => ({ words: [...indexWords(tag), ...split(TAG_SYNONYMS[tag] || "")], weight: 1, minPrefix: 3, label: tag })),
+    ...g.consoles.map(id => byId(CONSOLES, id)).map(c => ({
+      words: [...indexWords(c.label), ...split(CONSOLE_SYNONYMS[c.id] || "")], weight: 1, minPrefix: 3, label: c.label,
+    })),
   ],
 }));
 
@@ -503,24 +677,35 @@ function search(query) {
 }
 
 /* ---------- Routing / rendering ----------
-   #/                            home: both views and their categories
-   #/<view>/<cat>?f=a,b          filterable game list for a category
-   #/<view>/<cat>/<game>?f=a,b   leaf placeholder page (keeps filters for Back)
-   #/search?q=words              search results
-   #/search/<game>?q=words       leaf placeholder page (keeps the query for Back) */
+   #/                                 home: both views and their categories
+   #/<view>/<cat>?f=a,b&s=sort        filterable, sortable game list for a category
+   #/<view>/<cat>/<game>?f=a,b&s=sort leaf page (keeps filters and sort for Back)
+   #/search?q=words&f=a,b&s=sort      search results, with the same filters and sort
+   #/search/<game>?q=words&f=a,b      leaf page (keeps the query and filters for Back) */
 function parseRoute() {
   const [path, query = ""] = location.hash.replace(/^#\/?/, "").split("?");
   const parts = path.split("/").filter(Boolean);
   const params = new URLSearchParams(query);
   const f = params.get("f");
-  return { parts, view: VIEWS[parts[0]] ? parts[0] : null, active: new Set(f ? f.split(",") : []), q: params.get("q") || "" };
+  return { parts, view: VIEWS[parts[0]] ? parts[0] : null, active: new Set(f ? f.split(",") : []),
+    q: params.get("q") || "", sort: params.get("s") || "" };
 }
 
-function routeTo(path, active) {
-  return `#/${path}` + (active && active.size ? `?f=${[...active].join(",")}` : "");
+function routeTo(path, active, sort, q) {
+  const params = [];
+  if (q != null) params.push(`q=${encodeURIComponent(q)}`);
+  if (active && active.size) params.push(`f=${[...active].join(",")}`);
+  if (sort) params.push(`s=${sort}`);
+  return `#/${path}` + (params.length ? `?${params.join("&")}` : "");
 }
 
-const searchRoute = (q, gameId) => `#/search${gameId ? "/" + gameId : ""}?q=${encodeURIComponent(q)}`;
+const searchRoute = (q, gameId, active, sort) => routeTo(`search${gameId ? "/" + gameId : ""}`, active, sort, q);
+
+// The current page with other filters or another sort order.
+function currentRouteWith(active, sort) {
+  const { parts, q } = parseRoute();
+  return routeTo(parts.join("/"), active, sort, parts[0] === "search" ? q : null);
+}
 
 const esc = s => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -535,10 +720,19 @@ function pageHead(eyebrow, title, sub) {
   </div>`;
 }
 
-function categoryCard(label, route, count) {
+// Covers of four games spread through the category's list, so the art shows its range.
+function categoryArt(games) {
+  const withArt = games.filter(g => g.image);
+  const picks = [0, 1, 2, 3].map(i => withArt[Math.floor((i * withArt.length) / 4)]).filter(Boolean);
+  return `<span class="cat-art" aria-hidden="true">${picks.map(g =>
+    `<img src="${esc(g.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`).join("")}</span>`;
+}
+
+function categoryCard(label, route, games) {
   return `<button class="card cat-card" data-log="${esc(label)}" data-route="${route}" data-type="category">
+    ${categoryArt(games)}
     <span class="card-title">${esc(label)}</span>
-    <span class="card-foot"><span class="card-meta">${plural(count)}</span><span class="card-arrow" aria-hidden="true">→</span></span>
+    <span class="card-foot"><span class="card-meta">${plural(games.length)}</span><span class="card-arrow" aria-hidden="true">→</span></span>
   </button>`;
 }
 
@@ -552,21 +746,123 @@ function cover(game, cls, alt) {
 }
 
 const tagList = labels => labels.map(t => `<span class="tag">${esc(t)}</span>`).join("");
+// On game pages, each tag is a link that searches for it. The tree test hides the
+// search box (tree-test.js), and then the tags stay plain, so they can't be used to search.
+const tagLinks = labels => document.getElementById("search").hidden ? tagList(labels) : labels.map(t =>
+  `<button class="tag tag-link" data-log="Tag: ${esc(t)}" data-route="${searchRoute(t)}" data-type="tag"
+    title="Search for ${esc(t)}">${esc(t)}</button>`).join("");
 
-// Cards show genre and audience; the game page shows every category the game is in.
-const cardTags = g => tagList([byId(GENRES, g.genre).label, byId(AUDIENCE.options, g.audience).label]);
+const MONTHS = "January February March April May June July August September October November December".split(" ");
+// "2023-06-02" -> "June 2, 2023"; "2026-09" -> "September 2026"
+const formatDate = d => {
+  const [y, m, day] = d.split("-").map(Number);
+  return day ? `${MONTHS[m - 1]} ${day}, ${y}` : `${MONTHS[m - 1]} ${y}`;
+};
+
+// The kind of game, from its first store tag ("Fighting", "FPS", "Kart Racing"),
+// so specific genres can be told apart inside a broad category.
+const gameType = g => g.tags[0];
+const genreLabels = g => g.genre.map(id => byId(GENRES, id).label);
+const audienceLabel = g => byId(AUDIENCE.options, g.audience).label;
+const consoleNames = (g, key) => g.consoles.map(id => byId(CONSOLES, id)[key]);
+const playNames = (g, key) => g.play.map(id => byId(PLAY_STYLES, id)[key]);
+const money = n => (n === 0 ? "Free" : `$${n.toFixed(2)}`);
+const priceRange = g => g.price == null ? "Not sold now" : (g.maxPrice > g.price ? "From " : "") + money(g.price);
+
+// Cards show the game type, genre and audience, then where it plays, how many can play, and the price.
+const cardTags = g => (gameType(g) ? `<span class="tag type">${esc(gameType(g))}</span>` : "") +
+  tagList(genreLabels(g).filter(l => l !== gameType(g)).concat(audienceLabel(g)));
+// The game page shows every category the game is in.
 const categoryLabels = g => [...new Set(Object.entries(ATTRIBUTES)
   .flatMap(([attr, options]) => [].concat(g[attr]).map(id => byId(options, id).label)))];
 
 function gameCard(game, route, note) {
+  const consoles = consoleNames(game, "short");
   return `<button class="card game-card" data-log="${esc(game.name)}" data-route="${route}" data-type="game">
     ${cover(game, "", "")}
     <span class="card-body">
       <span class="card-title">${esc(game.name)}</span>
       <span class="tags">${cardTags(game)}</span>
+      <span class="card-facts">
+        <span><b>Plays on</b> ${consoles.length ? esc(consoles.join(", ")) : "Not sold now"}</span>
+        <span><b>Players</b> ${esc(playNames(game, "short").join(", "))}</span>
+      </span>
+      <span class="card-price">${priceRange(game)}</span>
       ${note ? `<span class="card-note">${note}</span>` : ""}
     </span>
   </button>`;
+}
+
+// Checkbox filters on the left of a game list, with a link to clear them. Each option
+// shows how many games checking it would leave, given the other groups' filters
+// (within a group, checking another option adds games). Options no game in the
+// list has are left out; ones the other filters rule out are greyed.
+function filterPanel(groups, active, sort, all, key) {
+  const fieldsets = groups.map(group => {
+    const others = applyFilters(all, groups.filter(x => x !== group), active, key);
+    const options = group.options.filter(o => active.has(o.id) || all.some(x => o.test(key(x))));
+    if (!options.length) return "";
+    return `<fieldset><legend>${group.label}<span class="rule"> · any of</span></legend>
+    ${options.map(o => {
+      const n = others.filter(x => o.test(key(x))).length;
+      const off = !n && !active.has(o.id);
+      return `<label${off ? ' class="none"' : ""}><input type="checkbox" data-log="Filter: ${esc(o.label)}" data-type="filter"
+      data-filter="${o.id}"${active.has(o.id) ? " checked" : ""}${off ? " disabled" : ""}> ${esc(o.label)}<span class="count">${n}</span></label>`;
+    }).join("")}
+    </fieldset>`;
+  }).join("");
+  const anyOn = groups.some(group => group.options.some(o => active.has(o.id)));
+  return `<aside class="panel filters" aria-label="Filters">
+    <div class="panel-head"><h2 class="panel-title">Filter</h2>${anyOn
+      ? `<button class="clear" data-log="Clear filters" data-route="${currentRouteWith(new Set(), sort)}" data-type="clear-filters">Clear all</button>` : ""}</div>
+    ${fieldsets}
+  </aside>`;
+}
+
+// The sort menu above a list: a button that opens a list of sort orders. Each one
+// carries data-log and data-route like a filter, and replaces the URL in place.
+function sortMenu(sort, defaultLabel) {
+  const current = byId(SORTS, sort) || { id: "", label: defaultLabel };
+  const options = [{ id: "", label: defaultLabel, hint: "" }, ...SORTS].map(s => `<li>
+      <button data-log="Sort: ${esc(s.label)}" data-route="${currentRouteWith(parseRoute().active, s.id)}" data-type="sort"
+        ${s.id === current.id ? 'aria-current="true"' : ""}><span>${esc(s.label)}</span>${s.hint ? `<span class="hint">${s.hint}</span>` : ""}</button>
+    </li>`).join("");
+  return `<div class="sort-menu">
+      <button class="sort-toggle" id="sort-toggle" aria-expanded="false" aria-controls="sort-list">
+        <span>Sort<span class="sort-current">: ${esc(current.label)}</span></span><span class="caret" aria-hidden="true">▾</span>
+      </button>
+      <ul class="sort-list" id="sort-list" hidden>${options}</ul>
+    </div>`;
+}
+
+// The checked filters in words above the list, spelling out how they combine:
+// "Console: PC or PS5 and Price: Under $20". Each one has an × that unchecks it.
+function appliedFilters(groups, active, sort) {
+  const parts = groups.map(group => {
+    const on = group.options.filter(o => active.has(o.id));
+    if (!on.length) return "";
+    return `<span class="applied-group"><span class="applied-label">${group.label}:</span> ${on.map(o => {
+      const rest = new Set(active);
+      rest.delete(o.id);
+      return `<button class="chip" data-log="Remove filter: ${esc(o.label)}" data-route="${currentRouteWith(rest, sort)}"
+        data-type="clear-filters" aria-label="Remove filter: ${esc(o.label)}">${esc(o.label)}<span aria-hidden="true">×</span></button>`;
+    }).join(`<span class="joiner">or</span>`)}</span>`;
+  }).filter(Boolean);
+  return parts.length
+    ? `<p class="applied"><span class="applied-label">Showing</span>${parts.join(`<span class="joiner">and</span>`)}</p>` : "";
+}
+
+// Filters on the left; what's applied, the sort menu and the games (or a note that none match) on the right.
+// all is the list before filtering, for the counts; key gets the game from a list item.
+function gameList(groups, active, sort, defaultSort, cards, all, key = x => x) {
+  return `<div class="layout">
+      ${filterPanel(groups, active, sort, all, key)}
+      <div>
+        <div class="list-head">${appliedFilters(groups, active, sort)}${sortMenu(sort, defaultSort)}</div>
+        ${cards.length ? `<div class="game-grid">${cards.join("")}</div>`
+          : `<div class="empty">No games match these filters. Try unchecking some, or clear them all.</div>`}
+      </div>
+    </div>`;
 }
 
 function backButton(label, route) {
@@ -576,43 +872,64 @@ function backButton(label, route) {
 function gamePage(game, crumbs, eyebrow, back) {
   const platforms = game.platforms.map(([name, price, note]) => `<li>
       <span class="platform">${esc(name)}${note ? `<span class="platform-note">${esc(note)}</span>` : ""}</span>
-      <span class="price${/^\$|^Free/.test(price) ? "" : " unavailable"}">${esc(price)}</span>
+      <span class="price${forSale(price) ? "" : " unavailable"}">${esc(price)}</span>
     </li>`).join("");
-  return `${pageHead(eyebrow, game.name, `<span class="tags">${tagList(categoryLabels(game))}</span>`)}
+  const consoles = consoleNames(game, "label");
+  const facts = [
+    ["Type", game.tags.slice(0, 2).join(", ")],
+    ["Genre", genreLabels(game).join(", ")],
+    ["Players", playNames(game, "label").join(", ")],
+    ["Plays on", consoles.length ? consoles.join(", ") : "Not sold on any platform now"],
+    ["Audience", audienceLabel(game)],
+    ["Price", priceRange(game)],
+    ["Released", game.released && formatDate(game.released)],
+  ].filter(([, value]) => value);
+  return `${pageHead(eyebrow, game.name, `<span class="tags">${tagLinks(categoryLabels(game))}</span>`)}
     <div class="detail">
       <div class="detail-main">
         ${cover(game, "cover-large", `${game.name} cover art`)}
         <section class="panel about" aria-labelledby="about-title">
           <h2 class="panel-title" id="about-title">About this game</h2>
           <p class="description">${esc(game.description || "No description yet.")}</p>
-          ${game.tags.length ? `<h3 class="sub-title">Tags</h3><div class="tags">${tagList(game.tags)}</div>` : ""}
+          ${game.tags.length ? `<h3 class="sub-title">Tags</h3><div class="tags">${tagLinks(game.tags)}</div>` : ""}
           <p class="via">Found via ${crumbs.slice(1).map(c => esc(c[0])).join(" › ")}</p>
         </section>
       </div>
-      <section class="panel" aria-labelledby="platforms-title">
-        <h2 class="panel-title" id="platforms-title">Platforms and prices</h2>
-        ${platforms ? `<ul class="platforms">${platforms}</ul>` : `<p class="muted">No platform information yet.</p>`}
-        <p class="fine-print">US list prices for the standard edition, checked ${PRICES_CHECKED}. Sale prices may be lower.</p>
-      </section>
+      <div class="detail-side">
+        <section class="panel" aria-labelledby="glance-title">
+          <h2 class="panel-title" id="glance-title">At a glance</h2>
+          <dl class="facts">${facts.map(([term, value]) => `<dt>${term}</dt><dd>${esc(value)}</dd>`).join("")}</dl>
+          <p class="fine-print">"Plays on" includes consoles that run it through backward compatibility:
+            PS4 games play on PS5, Xbox One games on Xbox Series X|S, and Switch games on Switch 2.</p>
+        </section>
+        <section class="panel" aria-labelledby="platforms-title">
+          <h2 class="panel-title" id="platforms-title">Platforms and prices</h2>
+          ${platforms ? `<ul class="platforms">${platforms}</ul>` : `<p class="muted">No platform information yet.</p>`}
+          <p class="fine-print">US list prices for the standard edition, checked ${PRICES_CHECKED}. Sale prices may be lower.</p>
+        </section>
+      </div>
     </div>
     ${back}`;
 }
 
-function searchResults(q) {
-  const examples = `a game name, a genre (${GENRES.map(c => c.label).join(", ")}) or an audience (${AUDIENCE.options.map(o => o.label).join(", ")})`;
+function searchResults(q, active, sort) {
+  const examples = `a game name, a genre (${GENRES.map(c => c.label).join(", ")}), a console (PS4, Switch, PC) or an audience (${AUDIENCE.options.map(o => o.label).join(", ")})`;
   if (!q.trim()) return pageHead("Search", "Search", `Search for ${esc(examples)}.`);
   const { ignored, partial, results } = search(q);
-  return `${pageHead("Search", `Results for "${q}"`, plural(results.length))}
+  if (!results.length) return `${pageHead("Search", `Results for "${q}"`, plural(0))}
+    <div class="empty">No games match. Try ${esc(examples)}.</div>`;
+  const shown = sortGames(applyFilters(results, SEARCH_FILTERS, active, r => r.game), sort, r => r.game);
+  const count = shown.length === results.length ? plural(results.length) : `${shown.length} of ${plural(results.length)}`;
+  return `${pageHead("Search", `Results for "${q}"`, count)}
     ${partial ? `<p class="notice">No game matches every word, so these match some of them.</p>` : ""}
     ${ignored.length ? `<p class="notice">Nothing matched: ${esc(ignored.join(", "))}</p>` : ""}
-    ${results.length
-      ? `<div class="game-grid">${results.map(({ game, matched }) => gameCard(game, searchRoute(q, game.id),
-          matched.length ? `Matched: ${esc(matched.join(", "))}` : "")).join("")}</div>`
-      : `<div class="empty">No games match. Try ${esc(examples)}.</div>`}`;
+    ${gameList(SEARCH_FILTERS, active, sort, "Best match", shown.map(({ game, matched }) =>
+      gameCard(game, searchRoute(q, game.id, active, sort), matched.length ? `Matched: ${esc(matched.join(", "))}` : "")),
+      results, r => r.game)}`;
 }
 
 function render(keepScroll) {
-  const { parts, view, active, q } = parseRoute();
+  const { parts, view, active, q, sort } = parseRoute();
   const main = document.getElementById("main");
   const crumbs = [["Home", "#/"]];
   let html = "";
@@ -621,28 +938,30 @@ function render(keepScroll) {
   const cat = view && catId && byId(VIEWS[view].categories, catId);
 
   if (parts[0] === "search") {
-    const resultsRoute = searchRoute(q);
+    const resultsRoute = searchRoute(q, null, active, sort);
     const game = catId && byId(GAMES, catId);
     crumbs.push([`Search: "${q}"`, resultsRoute]);
     if (game) {
       crumbs.push([game.name, null]);
       html = gamePage(game, crumbs, "Search", backButton("Back to search results", resultsRoute));
     } else {
-      html = searchResults(q);
+      html = searchResults(q, active, sort);
     }
   // Home (and any route without a valid category) shows both views as sections.
   } else if (!cat) {
     html = `<section class="hero">
         <h1 class="hero-title">Find a game to play</h1>
+        <p class="hero-sub">Browse by genre or by how you play, then narrow the list by console, players and audience.
+          Or search for a game, genre or console from the box at the top.</p>
       </section>` + Object.entries(VIEWS).map(([id, V]) =>
       `<section class="browse" aria-labelledby="view-${id}">
         <h2 class="section-title" id="view-${id}">Browse ${esc(V.label.replace(/^By /, "by "))}</h2>
         <div class="cat-grid">${V.categories.map(c => categoryCard(c.label, routeTo(`${id}/${c.id}`),
-          GAMES.filter(g => V.inCategory(g, c.id)).length)).join("")}</div>
+          GAMES.filter(g => V.inCategory(g, c.id)))).join("")}</div>
       </section>`).join("");
   } else {
     const V = VIEWS[view];
-    const listRoute = routeTo(`${view}/${cat.id}`, active);
+    const listRoute = routeTo(`${view}/${cat.id}`, active, sort);
     const game = gameId && GAMES.find(g => g.id === gameId && V.inCategory(g, cat.id));
     crumbs.push([V.label, null], [cat.label, listRoute]);
 
@@ -650,18 +969,11 @@ function render(keepScroll) {
       crumbs.push([game.name, null]);
       html = gamePage(game, crumbs, cat.label, backButton("Back to " + cat.label, listRoute));
     } else {
-      const list = gamesIn(view, cat.id, active);
-      const filters = V.filters.map(group => `<fieldset><legend>${group.label}</legend>
-        ${group.options.map(o => `<label><input type="checkbox" data-log="Filter: ${esc(o.label)}" data-type="filter"
-          data-filter="${o.id}"${active.has(o.id) ? " checked" : ""}> ${esc(o.label)}</label>`).join("")}
-        </fieldset>`).join("");
+      const list = sortGames(gamesIn(view, cat.id, active), sort);
       html = `${pageHead(V.label, cat.label, plural(list.length))}
-        <div class="layout">
-          <aside class="panel filters" aria-label="Filters"><h2 class="panel-title">Filter</h2>${filters}</aside>
-          ${list.length
-            ? `<div class="game-grid">${list.map(g => gameCard(g, routeTo(`${view}/${cat.id}/${g.id}`, active))).join("")}</div>`
-            : `<div class="empty">No games match these filters.</div>`}
-        </div>`;
+        ${gameList(V.filters, active, sort, "Featured",
+          list.map(g => gameCard(g, routeTo(`${view}/${cat.id}/${g.id}`, active, sort))),
+          GAMES.filter(g => V.inCategory(g, cat.id)))}`;
     }
   }
 
@@ -688,13 +1000,45 @@ document.addEventListener("click", e => {
   const el = e.target.closest("[data-log]");
   if (!el) return;
   if (el.dataset.type === "filter") {
-    const { parts, active } = parseRoute();
+    const { active, sort } = parseRoute();
     el.checked ? active.add(el.dataset.filter) : active.delete(el.dataset.filter);
-    history.replaceState(null, "", routeTo(parts.join("/"), active));
+    history.replaceState(null, "", currentRouteWith(active, sort));
     render(true);
     return;
   }
+  if (el.dataset.type === "clear-filters" || el.dataset.type === "sort") {
+    history.replaceState(null, "", el.dataset.route);
+    render(true);
+    if (el.dataset.type === "sort") document.getElementById("sort-toggle").focus();
+    return;
+  }
   location.hash = el.dataset.route;
+});
+
+/* Sort menu: the button opens and closes the list; clicking outside it or
+   pressing Escape closes it, and the arrow keys move through the orders.  */
+function setSortMenu(open) {
+  const toggle = document.getElementById("sort-toggle");
+  if (!toggle) return;
+  toggle.setAttribute("aria-expanded", open);
+  document.getElementById("sort-list").hidden = !open;
+  if (open) (document.querySelector('.sort-list [aria-current]') || document.querySelector(".sort-list button")).focus();
+}
+document.addEventListener("click", e => {
+  const toggle = e.target.closest("#sort-toggle");
+  if (toggle) setSortMenu(toggle.getAttribute("aria-expanded") !== "true");
+  else if (!e.target.closest(".sort-list")) setSortMenu(false);
+});
+document.addEventListener("keydown", e => {
+  if (!e.target.closest(".sort-menu")) return;
+  const items = [...document.querySelectorAll(".sort-list button")];
+  const i = items.indexOf(e.target);
+  if (e.key === "Escape") { setSortMenu(false); document.getElementById("sort-toggle").focus(); }
+  else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    if (i === -1) return setSortMenu(true);
+    items[(i + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length].focus();
+  }
 });
 
 /* Search box. The Search button and each suggestion carry data-log and

@@ -5,7 +5,11 @@
                   Plain Steam "header.jpg" paths are used where the store's
                   current image is a temporary seasonal one
      description  a short summary, in our own words
-     tags         store-style descriptive tags (also searchable)
+     released     release date (YYYY-MM-DD, or YYYY-MM when the day isn't known)
+                  of the version listed: when it replaced an earlier version
+                  (Counter-Strike 2, Overwatch), that date; for games that began
+                  in early access, the full 1.0 release
+     tags        store-style descriptive tags (also searchable)
      platforms    [platform, US list price, optional note]: the base edition's
                   regular price on that platform's official store, not sale
                   prices. "No longer sold" for platforms it once came out on.
@@ -21,12 +25,14 @@ const DETAILS = {
   "counter-strike-2": {
     image: STEAM("730/162664aa5da85f418105350c5d67ca565f6c3713/header.jpg?t=1791824795"),
     description: "Two teams of five take turns planting and defusing a bomb over short, tense rounds. Money earned each round buys weapons and gear, so aim, economy and teamwork all matter. It replaced Counter-Strike: Global Offensive in 2023 and is free to play.",
+    released: "2023-09-27",
     tags: ["FPS", "Tactical", "Team-Based", "Esports", "Free to Play"],
     platforms: [["Windows", "Free"], ["Linux", "Free"]],
   },
   "team-fortress-2": {
     image: STEAM("440/header.jpg?t=1757348372"),
     description: "Nine cartoonish classes, from the Heavy to the Spy, fight over control points and push payload carts. Each class plays very differently, and the game's humor has kept it popular since 2007. It has been free to play since 2011.",
+    released: "2007-10-10",
     tags: ["FPS", "Class-Based", "Team-Based", "Comedy", "Free to Play"],
     platforms: [["Windows", "Free"], ["Linux", "Free"], ["Mac", "No longer sold"],
       ["Xbox 360", "No longer sold", "The Orange Box"], ["PlayStation 3", "No longer sold", "The Orange Box"]],
@@ -34,6 +40,7 @@ const DETAILS = {
   "fortnite": {
     image: NINTENDO("store/software/switch/70010000010192/a527817db47c1aafb78e2cc4ad92e70c9efce0aef494230e950751498e8b3880"),
     description: "Drop onto an island with up to 100 players and be the last one standing, building walls and ramps to outplay opponents. Beyond Battle Royale, it has survival, racing and music modes and thousands of player-made islands.",
+    released: "2017-07-21",
     tags: ["Battle Royale", "Third-Person Shooter", "Building", "Cross-Platform", "Free to Play"],
     platforms: [["Windows", "Free"], ["PlayStation 5", "Free"], ["PlayStation 4", "Free"], ["Xbox Series X|S", "Free"],
       ["Xbox One", "Free"], ["Nintendo Switch 2", "Free"], ["Nintendo Switch", "Free"], ["iOS", "Free"], ["Android", "Free"],
@@ -42,6 +49,7 @@ const DETAILS = {
   "halo-infinite": {
     image: STEAM("1240440/2262ffb4f1659df1c1cbf2c70af40560b4fa12e4/header.jpg?t=1774464322"),
     description: "Master Chief returns in an open-world campaign on the ringworld Zeta Halo, alongside a free-to-play multiplayer arena shooter. Multiplayer is free; the campaign is sold separately.",
+    released: "2021-11-15",
     tags: ["FPS", "Sci-Fi", "Arena Shooter", "Open World", "Free to Play"],
     platforms: [["Windows", "Free", "Campaign $59.99"], ["Xbox Series X|S", "Free", "Campaign $59.99"],
       ["Xbox One", "Free", "Campaign $59.99"]],
@@ -49,30 +57,35 @@ const DETAILS = {
   "league-of-legends": {
     image: "https://cdn1.epicgames.com/offer/24b9b5e323bc40eea252a10cdd3b2f10/EGS_LeagueofLegends_RiotGames_S1_2560x1440-47eb328eac5ddd63ebd096ded7d0d5ab?resize=1&w=960&quality=medium",
     description: "Two teams of five champions battle across three lanes to destroy the enemy's Nexus. With more than 160 champions to choose from, no two matches play out the same, and it's one of the biggest esports in the world.",
+    released: "2009-10-27",
     tags: ["MOBA", "Strategy", "Team-Based", "Esports", "Free to Play"],
     platforms: [["Windows", "Free"], ["Mac", "Free"]],
   },
   "marvel-rivals": {
     image: STEAM("2767030/c61f65c5968af5d85b0393005991ecee0184fcaf/header.jpg?t=1792140776"),
     description: "A 6v6 hero shooter with Marvel heroes and villains, from Spider-Man to Loki. Characters can combine abilities with teammates, and destructible maps keep every fight changing.",
+    released: "2024-12-06",
     tags: ["Hero Shooter", "Third-Person Shooter", "Superhero", "Team-Based", "Free to Play"],
     platforms: [["Windows", "Free"], ["PlayStation 5", "Free"], ["Xbox Series X|S", "Free"]],
   },
   "super-smash-bros-ultimate": {
     image: NINTENDO("store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9"),
     description: "Nintendo's crossover fighting game brings together every fighter in the series' history, from Mario and Link to Pikachu and Sonic. Knock opponents off the stage in fast, chaotic battles for up to eight players.",
+    released: "2018-12-07",
     tags: ["Fighting", "Platform Fighter", "Party", "Local Multiplayer", "Crossover"],
     platforms: [["Nintendo Switch", "$59.99"]],
   },
   "valorant": {
     image: PLAYSTATION("ap/rnd/202609/0921/8b9042708110602ee93c3a28f4efee0aba91c4b9419fa128.png"),
     description: "A 5v5 tactical shooter where one team plants a bomb-like Spike and the other defends. Precise gunplay works like Counter-Strike, but each agent also brings abilities such as smoke walls, healing or scouting drones.",
+    released: "2020-06-02",
     tags: ["FPS", "Tactical", "Hero Shooter", "Esports", "Free to Play"],
     platforms: [["Windows", "Free"], ["PlayStation 5", "Free"], ["Xbox Series X|S", "Free"]],
   },
   "apex-legends": {
     image: STEAM("1172470/6cf04767652d703b6050da84b82cfb1194258d7d/header.jpg?t=1790164440"),
     description: "A battle royale for squads of three, where each Legend has unique abilities that change how a team fights. Fast movement, sliding and a ping system for talking without voice chat set it apart.",
+    released: "2019-02-04",
     tags: ["Battle Royale", "FPS", "Hero Shooter", "Team-Based", "Free to Play"],
     platforms: [["Windows", "Free"], ["PlayStation 5", "Free"], ["PlayStation 4", "Free"], ["Xbox Series X|S", "Free"],
       ["Xbox One", "Free"], ["Nintendo Switch", "Free"]],
@@ -80,6 +93,7 @@ const DETAILS = {
   "overwatch": {
     image: STEAM("2357570/header.jpg"),
     description: "A team-based hero shooter where two teams of five heroes fight over objectives. Every hero has a clear role, tank, damage or support, and switching heroes mid-match to counter the other team is part of the strategy. It was called Overwatch 2 until 2026.",
+    released: "2022-10-04",
     tags: ["Hero Shooter", "FPS", "Team-Based", "Esports", "Free to Play"],
     platforms: [["Windows", "Free"], ["PlayStation 5", "Free"], ["PlayStation 4", "Free"], ["Xbox Series X|S", "Free"],
       ["Xbox One", "Free"], ["Nintendo Switch", "Free"]],
@@ -87,6 +101,7 @@ const DETAILS = {
   "call-of-duty-black-ops-7": {
     image: STEAM("3606480/d7041a15f572f7702d5f4bc97e498cd3e1cc62e2/header.jpg?t=1789747703"),
     description: "The latest Call of Duty, set in 2035, with a story campaign that can be played in co-op, fast-paced multiplayer and the round-based Zombies mode. It's built for quick matches and constant unlocks.",
+    released: "2025-11-14",
     tags: ["FPS", "Military", "Zombies", "Co-op", "Fast-Paced"],
     platforms: [["Windows", "$69.99"], ["PlayStation 5", "$69.99"], ["PlayStation 4", "$69.99"], ["Xbox Series X|S", "$69.99"],
       ["Xbox One", "$69.99"]],
@@ -94,12 +109,14 @@ const DETAILS = {
   "battlefield-6": {
     image: STEAM("2807960/c12d12ce3c7d217398d3fcad77427bfc9d57c570/header.jpg?t=1792168547"),
     description: "Large-scale modern warfare with tanks, jets and up to 64 players on maps where buildings can be blown apart. Squads of four work as a team, and it also has a story campaign.",
+    released: "2025-10-10",
     tags: ["FPS", "Military", "Large-Scale Battles", "Destruction", "Vehicles"],
     platforms: [["Windows", "$69.99"], ["PlayStation 5", "$69.99"], ["Xbox Series X|S", "$69.99"]],
   },
   "rocket-league": {
     image: NINTENDO("store/software/switch/70010000000457/93d8c90d84e815f9177a587d0693504f81d19f85ef9bf2484ac5ad54478b3876"),
     description: "Soccer, but with rocket-powered cars that can jump, boost and fly. Matches are five minutes long, and it's easy to pick up but takes a long time to master. Up to four players can play split-screen.",
+    released: "2015-07-07",
     tags: ["Sports", "Cars", "Split-Screen", "Esports", "Free to Play"],
     platforms: [["Windows", "Free"], ["PlayStation 4", "Free", "Also plays on PS5"], ["Xbox One", "Free", "Also plays on Xbox Series X|S"],
       ["Nintendo Switch", "Free"], ["Mac", "No longer sold"], ["Linux", "No longer sold"]],
@@ -107,12 +124,14 @@ const DETAILS = {
   "dota-2": {
     image: STEAM("570/header.jpg?t=1791407503"),
     description: "Two teams of five heroes battle to destroy each other's Ancient in one of the deepest strategy games around. Over 120 heroes, all free, and a huge esports scene.",
+    released: "2013-07-09",
     tags: ["MOBA", "Strategy", "Team-Based", "Esports", "Free to Play"],
     platforms: [["Windows", "Free"], ["Mac", "Free"], ["Linux", "Free"]],
   },
   "street-fighter-6": {
     image: STEAM("1364780/header.jpg?t=1791866175"),
     description: "Capcom's classic one-on-one fighting game, with simpler Modern controls for newcomers alongside the classic six-button style. World Tour mode adds an open-world story where you create your own fighter.",
+    released: "2023-06-02",
     tags: ["Fighting", "2D Fighter", "Local Multiplayer", "Esports", "Beginner-Friendly"],
     platforms: [["Windows", "$39.99"], ["PlayStation 5", "$39.99"], ["PlayStation 4", "$39.99"], ["Xbox Series X|S", "$39.99"],
       ["Nintendo Switch 2", "$39.99"]],
@@ -120,12 +139,14 @@ const DETAILS = {
   "tekken-8": {
     image: STEAM("1778820/c7b0b80639fc8c7d386922f414f293ca849e8e81/header.jpg?t=1787180720"),
     description: "A 3D fighting game built around aggressive play, with a Heat system that rewards attacking. Thirty-plus fighters, a story mode, and an arcade quest to learn the game.",
+    released: "2024-01-26",
     tags: ["Fighting", "3D Fighter", "Local Multiplayer", "Esports", "Story"],
     platforms: [["Windows", "$39.99"], ["PlayStation 5", "$39.99"], ["Xbox Series X|S", "$39.99"]],
   },
   "ea-sports-fc-26": {
     image: STEAM("3405690/2d96aa1b06e453cd62dae9029d412f19e61932c3/header.jpg?t=1789751159"),
     description: "The soccer series formerly called FIFA, with real clubs, leagues and players. Build a dream team in Ultimate Team, run a club in Career mode, or play friends on the same couch.",
+    released: "2025-09-26",
     tags: ["Sports", "Soccer", "Simulation", "Local Multiplayer", "Team Management"],
     platforms: [["Windows", "$69.99"], ["PlayStation 5", "$69.99"], ["PlayStation 4", "$69.99"], ["Xbox Series X|S", "$69.99"],
       ["Xbox One", "$69.99"], ["Nintendo Switch 2", "$69.99"], ["Nintendo Switch", "$59.99"]],
@@ -133,6 +154,7 @@ const DETAILS = {
   "splatoon-3": {
     image: NINTENDO("store/software/switch/70010000046395/94a4095cda06c4d85c637d1af451979f9933302b6b17174d97c45de7a68584a2"),
     description: "Teams of four ink-shooting Inklings race to cover the most ground in colorful paint. Swim through your own ink to move fast, and try the single-player story or co-op Salmon Run.",
+    released: "2022-09-09",
     tags: ["Third-Person Shooter", "Team-Based", "Colorful", "Family", "Co-op"],
     platforms: [["Nintendo Switch", "$59.99"]],
   },
@@ -140,36 +162,42 @@ const DETAILS = {
   "forza-horizon-5": {
     image: STEAM("1551360/header.jpg?t=1788546569"),
     description: "Race across an open-world Mexico, from jungles and volcanoes to city streets, in hundreds of real cars. The seasons change the map every week, with events from street races to off-road stunts.",
+    released: "2021-11-09",
     tags: ["Racing", "Open World", "Driving", "Cars", "Online Co-op"],
     platforms: [["Windows", "$59.99"], ["Xbox Series X|S", "$59.99"], ["Xbox One", "$59.99"], ["PlayStation 5", "$59.99"]],
   },
   "gran-turismo-7": {
     image: PLAYSTATION("ap/rnd/202109/1321/y7iyxoBE8VKotN89QCFhLgLM.png"),
     description: "A realistic driving simulator that celebrates car culture, with hundreds of carefully modeled cars and real-world tracks. Collect and tune cars through a café-themed campaign, or race others online.",
+    released: "2022-03-04",
     tags: ["Racing", "Simulation", "Realistic", "Cars", "Driving"],
     platforms: [["PlayStation 5", "$69.99", "Includes the PS4 version"], ["PlayStation 4", "$59.99"]],
   },
   "mario-kart-8-deluxe": {
     image: NINTENDO("store/software/switch/70010000000153/de697f487a36d802dd9a5ff0341f717c8486221f2f1219b675af37aca63bc453"),
     description: "Race as Mario and friends on tracks that flip upside down, glide through the air and dive underwater, using items to knock rivals back. Up to four people can play on one screen.",
+    released: "2017-04-28",
     tags: ["Kart Racing", "Party", "Local Multiplayer", "Family", "Arcade"],
     platforms: [["Nintendo Switch", "$59.99"]],
   },
   "mario-kart-world": {
     image: NINTENDO("store/software/switch2/70010000095431/0485f410193ca12f92a2f615ea608bb437540f321bd05e464593c33fefa09bf2"),
     description: "Mario Kart's first open world: drive freely between courses across one connected map. Knockout Tour races 24 players across several tracks at once, eliminating the stragglers.",
+    released: "2025-06-05",
     tags: ["Kart Racing", "Open World", "Party", "Local Multiplayer", "Family"],
     platforms: [["Nintendo Switch 2", "$79.99"]],
   },
   "forza-motorsport": {
     image: STEAM("2440510/header.jpg?t=1747073895"),
     description: "A circuit racing simulator with more than 500 real cars and detailed tracks from around the world. Upgrade cars as you race them in the Builders Cup career, or compete in ranked online races.",
+    released: "2023-10-10",
     tags: ["Racing", "Simulation", "Realistic", "Cars", "Track Racing"],
     platforms: [["Windows", "$69.99"], ["Xbox Series X|S", "$69.99"]],
   },
   "f1-25": {
     image: STEAM("3059520/76dc8ac45f1bd6dec26e04434ca1c8814e7bb330/header.jpg?t=1786646076"),
     description: "The official Formula 1 game, with every team, driver and circuit. Race a full season, run your own team in My Team, or follow the Braking Point story. The current edition includes the 2026 season update.",
+    released: "2025-05-30",
     tags: ["Racing", "Simulation", "Formula 1", "Realistic", "Split-Screen"],
     platforms: [["Windows", "$49.99", "2026 Season Edition"], ["PlayStation 5", "$49.99", "2026 Season Edition"],
       ["Xbox Series X|S", "$49.99", "2026 Season Edition"]],
@@ -177,12 +205,14 @@ const DETAILS = {
   "need-for-speed-unbound": {
     image: STEAM("1846380/eacea0635efb7af9054f6b299060fee32404ace7/header.jpg?t=1777394467"),
     description: "Street racing in Lakeshore City with a graffiti-inspired art style. Win races, build your car and dodge the police to qualify for The Grand, the city's biggest race.",
+    released: "2022-12-02",
     tags: ["Racing", "Street Racing", "Open World", "Police Chases", "Arcade"],
     platforms: [["Windows", "$69.99"], ["PlayStation 5", "$69.99"], ["Xbox Series X|S", "$69.99"]],
   },
   "the-crew-motorfest": {
     image: STEAM("2698940/header.jpg"),
     description: "An open-world racing festival on the Hawaiian island of O'ahu. Switch between cars, planes and boats, and play themed playlists of events from vintage cars to motorsports.",
+    released: "2023-09-14",
     tags: ["Racing", "Open World", "Cars", "Arcade", "Online Co-op"],
     platforms: [["Windows", "$59.99"], ["PlayStation 5", "$59.99"], ["PlayStation 4", "$59.99"], ["Xbox Series X|S", "$59.99"],
       ["Xbox One", "$59.99"]],
@@ -190,12 +220,14 @@ const DETAILS = {
   "ea-sports-wrc": {
     image: STEAM("1849250/header.jpg?t=1779987212"),
     description: "The official World Rally Championship game from the makers of DiRT Rally. Race against the clock on gravel, snow and tarmac stages, and design your own rally car in Builder mode.",
+    released: "2023-11-03",
     tags: ["Racing", "Rally", "Simulation", "Realistic", "Off-Road"],
     platforms: [["Windows", "$49.99"], ["PlayStation 5", "$49.99"], ["Xbox Series X|S", "$49.99"]],
   },
   "assetto-corsa-competizione": {
     image: STEAM("805550/header.jpg?t=1766404577"),
     description: "The official game of the GT World Challenge, built as a serious racing simulator. It's best with a steering wheel, with detailed tire physics, weather and full 24-hour races.",
+    released: "2019-05-29",
     tags: ["Racing", "Simulation", "Realistic", "GT Racing", "Difficult"],
     platforms: [["Windows", "$39.99"], ["PlayStation 5", "$39.99"], ["PlayStation 4", "$39.99"], ["Xbox Series X|S", "$39.99"],
       ["Xbox One", "$39.99"]],
@@ -203,6 +235,7 @@ const DETAILS = {
   "sonic-racing-crossworlds": {
     image: STEAM("2486820/header.jpg"),
     description: "Kart racing with Sonic and friends, where Travel Rings warp the race to a different world partway through. Build your kart from parts and gadgets, and race up to 12 players online.",
+    released: "2025-09-25",
     tags: ["Kart Racing", "Arcade", "Party", "Local Multiplayer", "Family"],
     platforms: [["Windows", "$39.99"], ["PlayStation 5", "$39.99"], ["PlayStation 4", "$39.99"], ["Xbox Series X|S", "$39.99"],
       ["Xbox One", "$39.99"], ["Nintendo Switch 2", "$39.99"], ["Nintendo Switch", "$39.99"]],
@@ -210,6 +243,7 @@ const DETAILS = {
   "crash-team-racing-nitro-fueled": {
     image: NINTENDO("store/software/switch/70010000016211/54604e9a2dfd69c7cacef0faf07b2189b9f31c746655590e011a533eb7f79b8d"),
     description: "A remake of the 1999 kart racer starring Crash Bandicoot. Power-sliding and boosting is tricky to master, and it includes the original's tracks plus those from Crash Nitro Kart.",
+    released: "2019-06-21",
     tags: ["Kart Racing", "Arcade", "Local Multiplayer", "Remake", "Family"],
     platforms: [["PlayStation 4", "$39.99", "Also plays on PS5"], ["Xbox One", "$39.99", "Also plays on Xbox Series X|S"],
       ["Nintendo Switch", "$39.99"]],
@@ -217,6 +251,7 @@ const DETAILS = {
   "hot-wheels-unleashed-2-turbocharged": {
     image: STEAM("2051120/header.jpg?t=1785493588"),
     description: "Race toy Hot Wheels cars on giant orange tracks with loops and jumps through bedrooms, gas stations and dinosaur parks. Build your own tracks and race friends in split-screen.",
+    released: "2023-10-19",
     tags: ["Racing", "Arcade", "Track Builder", "Split-Screen", "Family"],
     platforms: [["Windows", "$39.99"], ["PlayStation 5", "$39.99"], ["PlayStation 4", "$39.99"], ["Xbox Series X|S", "$39.99"],
       ["Xbox One", "$39.99"], ["Nintendo Switch", "$39.99"]],
@@ -224,12 +259,14 @@ const DETAILS = {
   "trackmania": {
     image: STEAM("2225070/header.jpg"),
     description: "A time-trial racing game about finding the perfect line through wild stunt tracks. Chase world records, play a new track of the day, or build your own with the track editor.",
+    released: "2020-07-01",
     tags: ["Racing", "Time Trial", "Track Builder", "Arcade", "Free to Play"],
     platforms: [["Windows", "Free"], ["PlayStation 5", "Free"], ["PlayStation 4", "Free"], ["Xbox Series X|S", "Free"], ["Xbox One", "Free"]],
   },
   "burnout-paradise-remastered": {
     image: STEAM("1238080/header.jpg?t=1779987578"),
     description: "Open-world arcade racing in Paradise City, where crashing rivals off the road is half the fun. Every intersection starts an event, and spectacular slow-motion crashes are the series' trademark.",
+    released: "2018-03-16",
     tags: ["Racing", "Open World", "Arcade", "Crashes", "Remastered"],
     platforms: [["Windows", "$19.99"], ["PlayStation 4", "$19.99"], ["Xbox One", "$19.99"], ["Nintendo Switch", "$29.99"],
       ["PlayStation 3", "No longer sold", "Original version"], ["Xbox 360", "No longer sold", "Original version"]],
@@ -237,18 +274,21 @@ const DETAILS = {
   "dirt-rally-2-0": {
     image: STEAM("690790/7a10c1ff13373845ff5c0bc4fc2421838043601e/header.jpg?t=1789553676"),
     description: "A demanding rally simulator where you race alone against the clock through forests, mud and gravel. Car damage carries over between stages, so one mistake can end a rally.",
+    released: "2019-02-26",
     tags: ["Racing", "Rally", "Simulation", "Difficult", "Off-Road"],
     platforms: [["Windows", "$19.99"], ["PlayStation 4", "$19.99"], ["Xbox One", "$19.99"]],
   },
   "motogp-25": {
     image: STEAM("3077390/header.jpg?t=1753692631"),
     description: "The official MotoGP motorcycle racing game, with all the riders and circuits of the 2025 season. Start in Moto3 in career mode and work up to MotoGP, with assists that help new riders.",
+    released: "2025-04-30",
     tags: ["Racing", "Motorcycles", "Simulation", "Realistic", "Career"],
     platforms: [["Windows", "$49.99"], ["PlayStation 5", "$49.99"], ["Xbox Series X|S", "$49.99"], ["Nintendo Switch", "$39.99"]],
   },
   "wreckfest": {
     image: STEAM("228380/header.jpg?t=1742490584"),
     description: "Demolition derby racing where cars crumple and fall apart realistically. Race beat-up cars, lawnmowers and school buses, and win by finishing first or by wrecking everyone else.",
+    released: "2018-06-14",
     tags: ["Racing", "Destruction", "Demolition Derby", "Arcade", "Crashes"],
     platforms: [["Windows", "$29.99"], ["PlayStation 4", "$29.99", "Also plays on PS5"], ["Xbox One", "$29.99", "Also plays on Xbox Series X|S"],
       ["Nintendo Switch", "$39.99"]],
@@ -257,36 +297,42 @@ const DETAILS = {
   "final-fantasy-vii-rebirth": {
     image: STEAM("2909400/64a1006a85342c7d3e4b1e1b8e562fee2dc86578/header.jpg?t=1789446799"),
     description: "The second part of the Final Fantasy VII remake trilogy follows Cloud and his friends as they leave Midgar to chase Sephiroth across a vast open world. Battles mix real-time action with pausing to choose spells and abilities.",
+    released: "2024-02-29",
     tags: ["RPG", "Action RPG", "Story Rich", "Open World", "Fantasy"],
     platforms: [["PlayStation 5", "$49.99"], ["Windows", "$49.99"], ["Xbox Series X|S", "$49.99"], ["Nintendo Switch 2", "$49.99"]],
   },
   "marvel-s-spider-man-2": {
     image: STEAM("2651280/header.jpg?t=1763569811"),
     description: "Play as both Peter Parker and Miles Morales as they swing across an expanded New York City and face Kraven the Hunter and the Venom symbiote. You can switch between the two Spider-Men as the story goes on.",
+    released: "2023-10-20",
     tags: ["Action", "Open World", "Superhero", "Story Rich", "Singleplayer"],
     platforms: [["PlayStation 5", "$69.99"], ["Windows", "$59.99"]],
   },
   "the-legend-of-zelda-tears-of-the-kingdom": {
     image: NINTENDO("store/software/switch/70010000063714/fb30eab428df3fc993b41c76e20f72e4d76d49734d17d31996b5ab61c414b117"),
     description: "Link explores Hyrule's land, the islands in the sky and the depths below to stop an ancient evil. New powers let you fuse items into weapons and build vehicles out of whatever you find.",
+    released: "2023-05-12",
     tags: ["Open World", "Adventure", "Exploration", "Puzzle", "Fantasy"],
     platforms: [["Nintendo Switch", "$69.99"], ["Nintendo Switch 2", "$79.99", "Nintendo Switch 2 Edition"]],
   },
   "ratchet-clank": {
     image: PLAYSTATION("img/rnd/202011/0204/g7QavKoff0uAngWn4Hiytel9.png"),
     description: "A 2016 reimagining of the 2002 original, released alongside the animated movie. Ratchet, a Lombax mechanic, and Clank, his robot friend, team up to save the galaxy with over-the-top gadgets and weapons.",
+    released: "2016-04-12",
     tags: ["Platformer", "Third-Person Shooter", "Sci-Fi", "Family", "Singleplayer"],
     platforms: [["PlayStation 4", "$19.99", "Also plays on PS5"]],
   },
   "baldur-s-gate-3": {
     image: STEAM("1086940/48a2fcbda8565bb45025e98fd8ebde8a7203f6a0/header.jpg?t=1777363040"),
     description: "A party-based RPG built on Dungeons & Dragons rules, where almost every choice changes the story. Recruit companions, fight turn-based battles, and play alone or with up to three friends.",
+    released: "2023-08-03",
     tags: ["RPG", "Turn-Based", "Fantasy", "Story Rich", "Co-op"],
     platforms: [["Windows", "$59.99"], ["Mac", "$59.99"], ["PlayStation 5", "$69.99"], ["Xbox Series X|S", "$69.99"]],
   },
   "hollow-knight-silksong": {
     image: STEAM("1030300/7983574d464e6559ac7e24275727f73a8bcca1f3/header.jpg?t=1776125736"),
     description: "Play as Hornet as she climbs through Pharloom, a haunted kingdom of silk and song. Fast, acrobatic combat and a huge interconnected map make this follow-up to Hollow Knight a demanding 2D adventure.",
+    released: "2025-09-04",
     tags: ["Metroidvania", "2D Platformer", "Difficult", "Hand-Drawn", "Singleplayer"],
     platforms: [["Windows", "$19.99"], ["Mac", "$19.99"], ["Linux", "$19.99"], ["PlayStation 5", "$19.99"], ["PlayStation 4", "$19.99"],
       ["Xbox Series X|S", "$19.99"], ["Xbox One", "$19.99"], ["Nintendo Switch 2", "$19.99"], ["Nintendo Switch", "$19.99"]],
@@ -294,6 +340,7 @@ const DETAILS = {
   "elden-ring": {
     image: STEAM("1245620/header.jpg?t=1790290043"),
     description: "Explore the Lands Between, a vast dark-fantasy world created by FromSoftware with George R. R. Martin. Tough boss fights reward patience and practice, and you can summon other players for help.",
+    released: "2022-02-25",
     tags: ["Souls-like", "Open World", "Dark Fantasy", "Difficult", "RPG"],
     platforms: [["Windows", "$59.99"], ["PlayStation 5", "$59.99"], ["PlayStation 4", "$59.99"], ["Xbox Series X|S", "$59.99"],
       ["Xbox One", "$59.99"], ["Nintendo Switch 2", "$79.99", "Tarnished Edition, includes Shadow of the Erdtree"]],
@@ -301,18 +348,21 @@ const DETAILS = {
   "monster-hunter-wilds": {
     image: STEAM("2246340/header.jpg?t=1787549555"),
     description: "Track and hunt huge monsters across changing landscapes, alone or with up to three other hunters. Craft new weapons and armor from what you hunt to take on tougher prey.",
+    released: "2025-02-28",
     tags: ["Action", "Co-op", "Hunting", "Crafting", "Open World"],
     platforms: [["Windows", "$39.99"], ["PlayStation 5", "$39.99"], ["Xbox Series X|S", "$39.99"]],
   },
   "god-of-war": {
     image: STEAM("1593500/header.jpg?t=1763059412"),
     description: "Kratos, the former Greek god of war, now lives in the world of Norse myth with his young son Atreus. Their journey to scatter his wife's ashes becomes a story about fatherhood, told in what looks like one continuous shot.",
+    released: "2018-04-20",
     tags: ["Action", "Mythology", "Story Rich", "Hack and Slash", "Singleplayer"],
     platforms: [["PlayStation 4", "$19.99", "Also plays on PS5"], ["Windows", "$49.99"]],
   },
   "grand-theft-auto-v": {
     image: STEAM("3240220/header.jpg?t=1781187782"),
     description: "Switch between three criminals as they pull off heists across Los Santos, a satire of Los Angeles. It includes GTA Online, a shared world that keeps getting new content.",
+    released: "2013-09-17",
     tags: ["Open World", "Crime", "Third-Person Shooter", "Driving", "Heists"],
     platforms: [["Windows", "$29.99"], ["PlayStation 5", "$39.99"], ["Xbox Series X|S", "$39.99"],
       ["PlayStation 4", "$29.99", "Premium Edition"], ["Xbox One", "$29.99", "Premium Edition"],
@@ -321,12 +371,14 @@ const DETAILS = {
   "super-mario-odyssey": {
     image: NINTENDO("store/software/switch/70010000001130/c42553b4fd0312c31e70ec7468c6c9bccd739f340152925b9600631f2d29f8b5"),
     description: "Mario sails to kingdoms around the world aboard the Odyssey to rescue Princess Peach. His hat, Cappy, lets him take control of enemies and objects, and a second player can play as Cappy.",
+    released: "2017-10-27",
     tags: ["3D Platformer", "Adventure", "Exploration", "Family", "Collectathon"],
     platforms: [["Nintendo Switch", "$59.99"]],
   },
   "cyberpunk-2077": {
     image: STEAM("1091500/e9047d8ec47ae3d94bb8b464fb0fc9e9972b4ac7/header.jpg?t=1784714077"),
     description: "As V, a mercenary in the neon megacity of Night City, you chase a one-of-a-kind implant that holds the key to immortality. Shape your character with cyberware and choose how each mission plays out.",
+    released: "2020-12-10",
     tags: ["RPG", "Open World", "Sci-Fi", "Cyberpunk", "Story Rich"],
     platforms: [["Windows", "$59.99"], ["Mac", "$59.99"], ["PlayStation 5", "$59.99"], ["Xbox Series X|S", "$59.99"],
       ["Nintendo Switch 2", "$69.99", "Ultimate Edition"], ["PlayStation 4", "$59.99"], ["Xbox One", "$59.99"],
@@ -335,6 +387,7 @@ const DETAILS = {
   "red-dead-redemption-2": {
     image: STEAM("1174180/header.jpg?t=1759502961"),
     description: "Arthur Morgan rides with a gang of outlaws as the Wild West comes to an end. A slow, detailed open world full of hunting, camps and towns, with Red Dead Online included.",
+    released: "2018-10-26",
     tags: ["Open World", "Western", "Story Rich", "Third-Person Shooter", "Horses"],
     platforms: [["Windows", "$59.99"], ["PlayStation 4", "$59.99", "Also plays on PS5"], ["Xbox One", "$59.99", "Also plays on Xbox Series X|S"],
       ["Stadia", "No longer sold"]],
@@ -342,6 +395,7 @@ const DETAILS = {
   "the-witcher-3-wild-hunt": {
     image: STEAM("292030/header.jpg"),
     description: "Geralt, a monster hunter for hire, searches for his adopted daughter across a war-torn fantasy world. Its side quests are as well written as the main story, and choices have lasting effects.",
+    released: "2015-05-19",
     tags: ["RPG", "Open World", "Fantasy", "Story Rich", "Choices Matter"],
     platforms: [["Windows", "$49.99"], ["PlayStation 5", "$49.99", "Includes the PS4 version"], ["Xbox Series X|S", "$49.99", "Includes the Xbox One version"],
       ["Nintendo Switch", "$59.99", "Complete Edition"]],
@@ -349,6 +403,7 @@ const DETAILS = {
   "hogwarts-legacy": {
     image: STEAM("990080/be2971b1023bccb04f993887d70ef4d2060262cf/header.jpg?t=1790708992"),
     description: "Attend Hogwarts as a new fifth-year student in the 1800s, a century before Harry Potter. Learn spells, brew potions, fly a broom and explore the castle and the countryside around it.",
+    released: "2023-02-10",
     tags: ["Open World", "Fantasy", "Magic", "RPG", "Singleplayer"],
     platforms: [["Windows", "$59.99"], ["PlayStation 5", "$69.99"], ["Xbox Series X|S", "$69.99"], ["PlayStation 4", "$59.99"],
       ["Xbox One", "$59.99"], ["Nintendo Switch 2", "$34.99"], ["Nintendo Switch", "$59.99"]],
@@ -356,18 +411,21 @@ const DETAILS = {
   "split-fiction": {
     image: STEAM("2001120/header.jpg?t=1763484567"),
     description: "Two writers get trapped inside their own sci-fi and fantasy stories and have to work together to escape. Co-op only, online or on one couch, and only one player needs to own it.",
+    released: "2025-03-06",
     tags: ["Co-op", "Split-Screen", "Adventure", "Sci-Fi", "Fantasy"],
     platforms: [["Windows", "$49.99"], ["PlayStation 5", "$49.99"], ["Xbox Series X|S", "$49.99"], ["Nintendo Switch 2", "$49.99"]],
   },
   "ghost-of-yotei": {
     image: PLAYSTATION("ap/rnd/202607/2723/890df32c227f619c5bd80e9f34ba2be53d0fea4b1615adee.png"),
     description: "In 1600s Japan, the mercenary Atsu hunts the gang that killed her family, across the wilds around Mount Yōtei. Swordplay is sharp and deadly, and the open world is guided by wind and landmarks instead of map markers.",
+    released: "2025-10-02",
     tags: ["Open World", "Samurai", "Story Rich", "Action", "Singleplayer"],
     platforms: [["PlayStation 5", "$69.99", "Complete Edition"]],
   },
   "clair-obscur-expedition-33": {
     image: STEAM("1903340/be3305b02d4db0dffa3458537118423bf2792d7e/header.jpg?t=1782830877"),
     description: "Each year the Paintress erases everyone of a certain age; Expedition 33 sets out to stop her. A turn-based RPG where you dodge and parry enemy attacks in real time, set in a world inspired by Belle Époque France.",
+    released: "2025-04-24",
     tags: ["RPG", "Turn-Based", "Story Rich", "Fantasy", "Singleplayer"],
     platforms: [["Windows", "$49.99"], ["PlayStation 5", "$49.99"], ["Xbox Series X|S", "$49.99"]],
   },
@@ -375,6 +433,7 @@ const DETAILS = {
   "minecraft": {
     image: "https://store-images.s-microsoft.com/image/apps.58378.13850085746326678.826cc014-d610-46af-bdb3-c5c96be4d22c.64287a91-c69e-4723-bb61-03fecd348c2a?q=90&w=960&h=540",
     description: "Build, mine and survive in an endless world made of blocks. Fight off monsters and hunger in Survival mode, or build anything you can imagine with unlimited blocks in Creative, alone or with friends.",
+    released: "2011-11-18",
     tags: ["Sandbox", "Survival", "Building", "Crafting", "Open World"],
     platforms: [["Windows", "$29.99", "Java & Bedrock"], ["Mac", "$29.99", "Java Edition"], ["Linux", "$29.99", "Java Edition"],
       ["PlayStation 5", "$19.99"], ["PlayStation 4", "$19.99"], ["Xbox Series X|S", "$19.99"], ["Xbox One", "$19.99"],
@@ -385,6 +444,7 @@ const DETAILS = {
   "civilization-vii": {
     image: STEAM("1295660/header.jpg?t=1789481137"),
     description: "Lead a civilization from antiquity to the modern age, founding cities, researching technology and dealing with rival leaders. New to the series, your civilization changes into a new one as each age begins.",
+    released: "2025-02-11",
     tags: ["Turn-Based Strategy", "4X", "Historical", "Empire Building", "Singleplayer"],
     platforms: [["Windows", "$69.99"], ["Mac", "$69.99"], ["Linux", "$69.99"], ["PlayStation 5", "$69.99"], ["PlayStation 4", "$69.99"],
       ["Xbox Series X|S", "$69.99"], ["Xbox One", "$69.99"], ["Nintendo Switch 2", "$69.99"], ["Nintendo Switch", "$59.99"]],
@@ -392,12 +452,14 @@ const DETAILS = {
   "animal-crossing": {
     image: NINTENDO("store/software/switch/70010000027619/9989957eae3a6b545194c42fec2071675c34aadacd65e6b33fdfe7b3b6a86c3a"),
     description: "In Animal Crossing: New Horizons, you move to a deserted island and turn it into your own community. Gather resources, decorate your home and invite animal villagers to move in, all following the real-world calendar and seasons.",
+    released: "2020-03-20",
     tags: ["Life Sim", "Cozy", "Relaxing", "Customization", "Family"],
     platforms: [["Nintendo Switch", "$59.99"], ["Nintendo Switch 2", "$64.99", "Nintendo Switch 2 Edition"]],
   },
   "stardew-valley": {
     image: STEAM("413150/header.jpg?t=1786554168"),
     description: "Inherit your grandfather's run-down farm and turn it around: grow crops, raise animals, fish, mine and get to know the townspeople. Up to four friends can share a farm, including split-screen on one screen.",
+    released: "2016-02-26",
     tags: ["Farming Sim", "Cozy", "Relaxing", "Pixel Art", "Co-op"],
     platforms: [["Windows", "$14.99"], ["Mac", "$14.99"], ["Linux", "$14.99"], ["PlayStation 4", "$14.99", "Also plays on PS5"],
       ["Xbox One", "$14.99", "Also plays on Xbox Series X|S"], ["Nintendo Switch 2", "$14.99"], ["Nintendo Switch", "$14.99"],
@@ -406,6 +468,7 @@ const DETAILS = {
   "the-sims-4": {
     image: STEAM("1222670/header.jpg?t=1790028362"),
     description: "Create people, build their homes and guide their lives, from careers and friendships to whatever chaos you have in mind. The base game is free, with many expansion packs sold separately.",
+    released: "2014-09-02",
     tags: ["Life Sim", "Building", "Sandbox", "Customization", "Free to Play"],
     platforms: [["Windows", "Free"], ["Mac", "Free"], ["PlayStation 4", "Free", "Also plays on PS5"],
       ["Xbox One", "Free", "Also plays on Xbox Series X|S"]],
@@ -413,36 +476,42 @@ const DETAILS = {
   "cities-skylines-ii": {
     image: STEAM("949230/header.jpg"),
     description: "Build a city from a few streets into a huge metropolis, planning roads, zoning, public transportation and services. Citizens each live their own lives, and the economy reacts to your choices.",
+    released: "2023-10-24",
     tags: ["City Builder", "Simulation", "Management", "Sandbox", "Singleplayer"],
     platforms: [["Windows", "$49.99"]],
   },
   "age-of-empires-iv": {
     image: STEAM("1466860/header.jpg?t=1780854334"),
     description: "A real-time strategy game set in the Middle Ages: gather resources, build a base and command armies of knights, archers and siege weapons. Campaigns tell real history with documentary-style films.",
+    released: "2021-10-28",
     tags: ["Real-Time Strategy", "Historical", "Base Building", "Multiplayer", "Medieval"],
     platforms: [["Windows", "$39.99"], ["PlayStation 5", "$39.99"], ["Xbox Series X|S", "$39.99"], ["Xbox One", "$39.99"]],
   },
   "age-of-empires-ii-definitive-edition": {
     image: STEAM("813780/header.jpg?t=1790623375"),
     description: "A remastered version of the 1999 real-time strategy classic, with dozens of civilizations and hundreds of hours of campaigns. Still one of the most popular competitive strategy games.",
+    released: "2019-11-14",
     tags: ["Real-Time Strategy", "Historical", "Base Building", "Remastered", "Medieval"],
     platforms: [["Windows", "$34.99"], ["Mac", "$34.99"], ["PlayStation 5", "$34.99"], ["Xbox Series X|S", "$34.99"], ["Xbox One", "$34.99"]],
   },
   "factorio": {
     image: STEAM("427520/ab9a2df0a77caebde20dc45adc021de8cdcf7cc5/header.jpg?t=1787348817"),
     description: "Crash-land on an alien planet and build ever-larger factories to launch a rocket. Mine resources, design conveyor-belt production lines and automate everything, while defending against the local wildlife.",
+    released: "2020-08-14",
     tags: ["Automation", "Base Building", "Crafting", "Sandbox", "Co-op"],
     platforms: [["Windows", "$35.00"], ["Mac", "$35.00"], ["Linux", "$35.00"], ["Nintendo Switch 2", "$35.00"], ["Nintendo Switch", "$35.00"]],
   },
   "satisfactory": {
     image: STEAM("526870/header.jpg?t=1791192059"),
     description: "Build huge factories in first person on an alien planet, connecting mines, machines, conveyor belts and trains across a beautiful open world. Up to four players can build together.",
+    released: "2024-09-10",
     tags: ["Automation", "Base Building", "Open World", "First-Person", "Co-op"],
     platforms: [["Windows", "$39.99"], ["PlayStation 5", "$39.99"], ["Xbox Series X|S", "$39.99"]],
   },
   "terraria": {
     image: STEAM("105600/header.jpg?t=1769844435"),
     description: "A 2D sandbox where you dig, build, craft and fight through a randomly generated world. Hundreds of bosses, items and biomes keep it going, and friends can join online or in split-screen on consoles.",
+    released: "2011-05-16",
     tags: ["Sandbox", "2D", "Crafting", "Survival", "Co-op"],
     platforms: [["Windows", "$9.99"], ["Mac", "$9.99"], ["Linux", "$9.99"], ["PlayStation 4", "$19.99", "Also plays on PS5"],
       ["Xbox One", "$19.99", "Also plays on Xbox Series X|S"], ["Nintendo Switch", "$29.99"], ["iOS", "$4.99"], ["Android", "$4.99"],
@@ -452,6 +521,7 @@ const DETAILS = {
   "valheim": {
     image: STEAM("892970/header.jpg"),
     description: "A Viking survival game set in a purgatory for fallen warriors. Gather resources, build longhouses and ships, and defeat legendary bosses, with up to 10 friends in the same world. It left early access with version 1.0 in September 2026.",
+    released: "2026-09",
     tags: ["Survival", "Base Building", "Viking", "Open World", "Co-op"],
     platforms: [["Windows", "$29.99"], ["Mac", "$29.99"], ["Linux", "$29.99"], ["PlayStation 5", "$29.99"], ["Xbox Series X|S", "$29.99"],
       ["Nintendo Switch 2", "$29.99"]],
@@ -459,18 +529,21 @@ const DETAILS = {
   "planet-coaster-2": {
     image: STEAM("2688950/header.jpg?t=1788781169"),
     description: "Design and run your own theme park, building roller coasters piece by piece and now water parks with slides and pools. Keep guests happy and the park profitable, or just build freely in sandbox mode.",
+    released: "2024-11-06",
     tags: ["Management", "Building", "Simulation", "Sandbox", "Creative"],
     platforms: [["Windows", "$49.99"], ["PlayStation 5", "$49.99"], ["Xbox Series X|S", "$49.99"]],
   },
   "frostpunk-2": {
     image: STEAM("1601580/header.jpg?t=1792058316"),
     description: "Rule the last city on a frozen Earth, keeping people warm and fed while rival factions fight over how society should work. Every law you pass has a cost, and keeping order is as hard as surviving the cold.",
+    released: "2024-09-20",
     tags: ["City Builder", "Survival", "Strategy", "Difficult", "Post-Apocalyptic"],
     platforms: [["Windows", "$44.99"], ["Mac", "$44.99"], ["PlayStation 5", "$44.99"], ["Xbox Series X|S", "$44.99"]],
   },
   "xcom-2": {
     image: STEAM("268500/header.jpg?t=1772813016"),
     description: "Aliens have taken over Earth, and you lead the resistance. Command a squad in tense turn-based battles where soldiers can die for good, and run a mobile base between missions.",
+    released: "2016-02-05",
     tags: ["Turn-Based Tactics", "Sci-Fi", "Strategy", "Difficult", "Aliens"],
     platforms: [["Windows", "$19.99"], ["Mac", "$19.99"], ["Linux", "$19.99"], ["PlayStation 4", "$39.99", "XCOM 2 Collection"],
       ["Xbox One", "$39.99", "XCOM 2 Collection"], ["Nintendo Switch", "$39.99", "XCOM 2 Collection"]],
@@ -478,18 +551,21 @@ const DETAILS = {
   "total-war-warhammer-iii": {
     image: STEAM("1142710/header.jpg?t=1790321531"),
     description: "Grand strategy in the Warhammer fantasy world: manage an empire turn by turn on a campaign map, then command huge real-time battles with monsters, magic and thousands of soldiers.",
+    released: "2022-02-17",
     tags: ["Grand Strategy", "Real-Time Tactics", "Fantasy", "Turn-Based Strategy", "Large-Scale Battles"],
     platforms: [["Windows", "$59.99"], ["Mac", "$59.99"], ["Linux", "$59.99"]],
   },
   "crusader-kings-iii": {
     image: STEAM("1158310/8a7e814d13f8e73c0d40471f585ece908f9be282/header.jpg?t=1791471575"),
     description: "A medieval grand strategy game about a dynasty, not just a country. Arrange marriages, plot against rivals and keep your family in power for centuries, one ruler after another.",
+    released: "2020-09-01",
     tags: ["Grand Strategy", "Medieval", "Historical", "Role-Playing", "Story Generator"],
     platforms: [["Windows", "$49.99"], ["Mac", "$49.99"], ["Linux", "$49.99"], ["PlayStation 5", "$49.99"], ["Xbox Series X|S", "$49.99"]],
   },
   "stellaris": {
     image: STEAM("281990/header.jpg"),
     description: "Space grand strategy: design a species, explore the galaxy, colonize planets and deal with other civilizations through diplomacy, trade or war. Random events make each galaxy play out differently.",
+    released: "2016-05-09",
     tags: ["Grand Strategy", "4X", "Sci-Fi", "Space", "Exploration"],
     platforms: [["Windows", "$49.99"], ["Mac", "$49.99"], ["Linux", "$49.99"], ["PlayStation 4", "$39.99", "Console Edition"],
       ["Xbox One", "$39.99", "Console Edition"]],
@@ -497,6 +573,7 @@ const DETAILS = {
   "rimworld": {
     image: STEAM("294100/76e0613b8197327299d5dbabb0a7fd7828a689a2/header.jpg?t=1782756789"),
     description: "Manage a small colony of crash-landed survivors on a distant planet. An AI storyteller throws raids, illnesses and disasters at you, and each colonist's moods and relationships create their own stories.",
+    released: "2018-10-17",
     tags: ["Colony Sim", "Survival", "Story Generator", "Base Building", "Sci-Fi"],
     platforms: [["Windows", "$34.99"], ["Mac", "$34.99"], ["Linux", "$34.99"], ["PlayStation 4", "$39.99", "Console Edition"],
       ["Xbox One", "$39.99", "Console Edition"]],
@@ -504,12 +581,14 @@ const DETAILS = {
   "anno-117-pax-romana": {
     image: STEAM("3274580/88dbcce1c7630e2d4334fa25e835968e57e0ebfe/header.jpg?t=1792072501"),
     description: "Govern a Roman province and grow it from villages into thriving cities connected by trade routes. Balance what your citizens need and decide whether to Romanize the local culture or embrace it.",
+    released: "2025-11-13",
     tags: ["City Builder", "Historical", "Economy", "Management", "Ancient Rome"],
     platforms: [["Windows", "$59.99"], ["PlayStation 5", "$59.99"], ["Xbox Series X|S", "$59.99"]],
   },
   "pikmin-4": {
     image: NINTENDO("store/software/switch/70010000005308/43af89ed5bd76ac5ec6b367b4b53092f8bf94a1d1312fdfc1d4664329fd5077b"),
     description: "Command a crowd of tiny plant creatures called Pikmin to explore, fight and carry treasure back to base. Plan each day to use your time well, and a second player can help out on the same screen.",
+    released: "2023-07-21",
     tags: ["Strategy", "Exploration", "Puzzle", "Family", "Local Co-op"],
     platforms: [["Nintendo Switch", "$59.99"], ["Nintendo Switch 2", "$69.99", "Nintendo Switch 2 Edition"]],
   },
