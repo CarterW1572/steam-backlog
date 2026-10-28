@@ -41,14 +41,12 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font: 16px/1.5 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
-  /* Browsing pages (home, categories, search results; not game pages): a soft band of purple
-     light across the page that fades in below the header, peaks behind the page's heading
-     and fades out before the cards, so it has no edge to meet the header (whose bottom rule
-     is dropped here too). On the page background, so it spans the window without making it
-     scroll sideways. */
-  body.browsing { background-image: linear-gradient(transparent 40px, hsl(265 70% 45% / 0.16) 160px, transparent 400px);
+  /* On every page: a soft band of purple light across the page that fades in below the
+     header, peaks behind the page's heading and fades out before the cards, so it has no
+     edge to meet the header (which has no bottom rule for the same reason). On the page
+     background, so it spans the window without making it scroll sideways. */
+  body { background-image: linear-gradient(transparent 40px, hsl(265 70% 45% / 0.16) 160px, transparent 400px);
     background-repeat: no-repeat; }
-  body.browsing .site-header { border-bottom-color: transparent; }
   button, input, select { font: inherit; color: inherit; }
   button { background: none; border: 0; cursor: pointer; text-align: left; }
   :focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
@@ -59,8 +57,7 @@
   .container { max-width: 1120px; margin: 0 auto; padding-left: var(--gutter); padding-right: var(--gutter); }
 
   /* Header */
-  .site-header { position: sticky; top: 0; z-index: 20; background: rgb(14 14 17 / 0.92); backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--line); }
+  .site-header { position: sticky; top: 0; z-index: 20; background: rgb(14 14 17 / 0.92); backdrop-filter: blur(8px); }
   .header-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding-top: 14px; padding-bottom: 14px; }
   .logo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
   .logo-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--base);
@@ -312,7 +309,7 @@
   /* Tree test screens (index.html?test and ?results) keep the plain wireframe
      look: black on white, Arial, square boxes.                                */
   .tt-plain { background: #fff; max-width: 900px; margin: 0 auto; padding: 16px; }
-  body.tt-plain { background-image: none; } /* no glow from the browsing pages */
+  body.tt-plain { background-image: none; } /* no glow from the site's pages */
   .tt-plain .container { padding: 0; }
   .tt-plain, .tt-plain *, .tt-modal, .tt-modal *, .tt-bar, .tt-bar * { font: 16px/1.4 Arial, sans-serif; color: #000; }
   .tt-plain button, .tt-modal button, .tt-bar button { background: #fff; border: 1px solid #000; border-radius: 0;
@@ -1084,7 +1081,6 @@ function render(keepScroll) {
   const main = document.getElementById("main");
   const crumbs = [["Home", "#/"]];
   let html = "";
-  let onGamePage = false;
 
   const [, catId, gameId] = parts;
   const cat = view && catId && byId(VIEWS[view].categories, catId);
@@ -1099,7 +1095,6 @@ function render(keepScroll) {
         .map(r => r.game);
       const routeFor = g => results.includes(g) ? searchRoute(q, g.id, active, sort) : ownRoute(g);
       const like = moreLikeThis(game);
-      onGamePage = true;
       html = gamePage(game, crumbs, "Search", backButton("Back to search results", resultsRoute),
         rail("like-title", "More like this", "", like, routeFor) +
         rail("more-title", `More results for "${q}"`, filteredTo(SEARCH_FILTERS, active), restOf(results, game, like),
@@ -1128,7 +1123,6 @@ function render(keepScroll) {
       crumbs.push([game.name, null]);
       const routeFor = g => V.inCategory(g, cat.id) ? routeTo(`${view}/${cat.id}/${g.id}`, active, sort) : ownRoute(g);
       const like = moreLikeThis(game);
-      onGamePage = true;
       html = gamePage(game, crumbs, cat.label, backButton("Back to " + cat.label, listRoute),
         rail("like-title", "More like this", "", like, routeFor) +
         rail("more-title", `More ${cat.label} games`, filteredTo(V.filters, active),
@@ -1143,8 +1137,6 @@ function render(keepScroll) {
   }
 
   main.innerHTML = html;
-  // The glow at the top marks the browsing pages: home, categories and search results.
-  document.body.classList.toggle("browsing", !onGamePage);
   const sep = `<span class="sep" aria-hidden="true">›</span>`;
   // Breadcrumbs start once the user leaves the home page; "Home" alone says nothing.
   const crumbNav = document.getElementById("crumbs");
