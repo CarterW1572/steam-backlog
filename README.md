@@ -44,6 +44,11 @@ Each game page shows the game's cover art, a short description, its tags, and th
 - **Release dates** are in `game-details.js` (`released`). For a game that replaced an earlier version (Counter-Strike 2, Overwatch) it's that version's date; for one that began in early access, its 1.0 release.
 - **Cover art** is linked from the official stores (Steam, Nintendo, PlayStation, Epic, Xbox), not stored in the repo. If an image doesn't load, the game's initials show instead.
 - **Tags** on the page are every category the game belongs to (genre, players, how you play, audience), plus store-style tags such as Open World, Souls-like or Battle Royale.
+- **Related games** sit at the bottom, in two rows of small cards (cover, name, kind of game, price) that scroll sideways four at a time with arrows, or by swiping on a phone:
+  - **More like this**: the 8 games that share the most with this one. Shared Game Types count most, then shared store tags, then genre, how you play and audience (`similarity` in `index.html`).
+  - **More [category] games** (such as "More Racing games"): the rest of the category the user came from, with their filters and sort order, starting after this game. When filters are checked, the row says so ("Filtered to PC, Under $20"). From search, it's **More results for "..."** instead. "See all" opens the whole list. A game already shown in More like this isn't repeated, and a row with no games is left out.
+  - A game in the list the user came from opens there, so Back and the breadcrumbs keep the user's path. Any other game opens under its first genre.
+  - Tree test participants don't see these rows unless `RELATED_IN_TEST` in `tree-test.js` is set to true, since they'd let participants jump between games without using the categories.
 - **Platforms** include every platform the game came out on. Prices are US list prices for the standard edition on each platform's official store, not sale prices, checked in October 2026. Platforms where it can't be bought anymore say "No longer sold". Update `PRICES_CHECKED` in `game-details.js` when you recheck them.
 
 ## Search

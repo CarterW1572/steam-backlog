@@ -210,9 +210,36 @@
   .btn-secondary { padding: 10px 20px; border: 1px solid var(--base); border-radius: 999px; font-weight: 600; }
   .btn-secondary:hover { background: var(--base); }
 
+  /* Related games under a game page: rows of small cards that scroll sideways, four at a
+     time, with round arrows over the ends. The tree test hides them (tree-test.js).     */
+  .related { margin-top: 48px; }
+  .related + .related { margin-top: 40px; }
+  .no-related .related { display: none; }
+  .related-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 12px; }
+  .related-head .section-title { margin-bottom: 0; }
+  .related-head .btn-secondary { flex: none; padding: 6px 16px; font-size: 14px; }
+  .related-sub { margin-top: 2px; font-size: 14px; color: var(--muted); }
+  .rail { position: relative; }
+  .rail-track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 3 * 16px) / 4); gap: 16px;
+    padding: 4px 0 8px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .rail-track::-webkit-scrollbar { display: none; }
+  .mini-card { overflow: hidden; scroll-snap-align: start; }
+  .mini-body { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 12px 14px 14px; }
+  .mini-card .card-title { font-size: 15px; }
+  .mini-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: auto; }
+  .mini-foot .card-price { white-space: nowrap; }
+  .rail-arrow { position: absolute; top: 50%; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px;
+    margin-top: -22px; border: 1px solid var(--line); border-radius: 999px; background: rgb(14 14 17 / 0.9);
+    font-size: 26px; line-height: 1; box-shadow: 0 6px 20px rgb(0 0 0 / 0.5); transition: opacity 0.15s, background 0.15s; }
+  .rail-arrow.prev { left: -20px; }
+  .rail-arrow.next { right: -20px; }
+  .rail-arrow:hover { border-color: var(--base); background: var(--base); }
+  .rail-arrow:disabled { opacity: 0; pointer-events: none; }
+
   @media (max-width: 900px) {
     .cat-grid { grid-template-columns: repeat(2, 1fr); }
     .detail { grid-template-columns: 1fr; }
+    .rail-track { grid-auto-columns: calc((100% - 2 * 16px) / 3); }
   }
   @media (max-width: 700px) {
     .layout { grid-template-columns: 1fr; }
@@ -227,6 +254,9 @@
     .page-title { font-size: 28px; }
     .cat-grid { grid-template-columns: 1fr; }
     .cat-card { min-height: 0; }
+    /* On phones the rows are swiped; the next card peeks in to show there's more. */
+    .rail-track { grid-auto-columns: 70%; }
+    .rail-arrow { display: none; }
   }
 
   /* Tree test screens (index.html?test and ?results) keep the plain wireframe
@@ -869,7 +899,7 @@ function backButton(label, route) {
   return `<button class="btn-secondary" data-log="${esc(label)}" data-route="${route}" data-type="back">← ${esc(label)}</button>`;
 }
 
-function gamePage(game, crumbs, eyebrow, back) {
+function gamePage(game, crumbs, eyebrow, back, related) {
   const platforms = game.platforms.map(([name, price, note]) => `<li>
       <span class="platform">${esc(name)}${note ? `<span class="platform-note">${esc(note)}</span>` : ""}</span>
       <span class="price${forSale(price) ? "" : " unavailable"}">${esc(price)}</span>
@@ -909,8 +939,67 @@ function gamePage(game, crumbs, eyebrow, back) {
         </section>
       </div>
     </div>
-    ${back}`;
+    ${back}
+    ${related}`;
 }
+
+/* ---------- Related games under a game page ----------
+   "More like this" ranks the other games by what they share with this one:
+   kinds of game (Game Type) count most, then store tags, then genre, how you
+   play and audience. The second row is the rest of the list the user came
+   from: the category, with its filters and sort, or the search results.    */
+const gameTypes = g => GAME_TYPE.options.filter(o => o.test(g)).map(o => o.id);
+const shared = (a, b) => a.filter(x => b.includes(x)).length;
+const similarity = (a, b) => 3 * shared(gameTypes(a), gameTypes(b)) + 2 * shared(a.tags, b.tags)
+  + shared(a.genre, b.genre) + 0.5 * shared(a.play, b.play) + (a.audience === b.audience ? 0.5 : 0);
+
+function moreLikeThis(game, count = 8) {
+  return GAMES.filter(g => g !== game).map(g => ({ g, score: similarity(game, g) })).filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score || byName(a.g, b.g)).slice(0, count).map(x => x.g);
+}
+
+// The rest of a list after this game, wrapping around, so the row picks up where the user left off.
+function restOf(list, game, skip, count = 12) {
+  const i = list.indexOf(game);
+  return [...list.slice(i + 1), ...list.slice(0, Math.max(i, 0))].filter(g => !skip.includes(g)).slice(0, count);
+}
+
+// A game that isn't in the list the user came from opens under its first genre.
+const ownRoute = g => routeTo(`genre/${g.genre[0]}/${g.id}`);
+
+// Small cards: cover, name, kind of game and price.
+function miniCard(game, route) {
+  return `<button class="card mini-card" data-log="${esc(game.name)}" data-route="${route}" data-type="game">
+    ${cover(game, "", "")}
+    <span class="mini-body">
+      <span class="card-title">${esc(game.name)}</span>
+      <span class="mini-foot">${gameType(game) ? `<span class="tag type">${esc(gameType(game))}</span>` : ""}
+        <span class="card-price">${priceRange(game)}</span></span>
+    </span>
+  </button>`;
+}
+
+// A row of small cards that scrolls sideways, with arrows, and a "See all" link to the whole list.
+function rail(id, title, sub, games, routeFor, seeAll) {
+  if (!games.length) return "";
+  return `<section class="related" aria-labelledby="${id}">
+    <div class="related-head">
+      <div><h2 class="section-title" id="${id}">${esc(title)}</h2>${sub ? `<p class="related-sub">${esc(sub)}</p>` : ""}</div>
+      ${seeAll ? `<button class="btn-secondary" data-log="See all: ${esc(title)}" data-route="${seeAll}" data-type="see-all">See all</button>` : ""}
+    </div>
+    <div class="rail">
+      <button class="rail-arrow prev" aria-label="Scroll ${esc(title)} left" disabled>‹</button>
+      <div class="rail-track">${games.map(g => miniCard(g, routeFor(g))).join("")}</div>
+      <button class="rail-arrow next" aria-label="Scroll ${esc(title)} right">›</button>
+    </div>
+  </section>`;
+}
+
+// "Filtered to PC, Under $20" when filters are checked.
+const filteredTo = (groups, active) => {
+  const labels = groups.flatMap(gr => gr.options).filter(o => active.has(o.id)).map(o => o.label);
+  return labels.length ? `Filtered to ${labels.join(", ")}` : "";
+};
 
 function searchResults(q, active, sort) {
   const examples = `a game name, a genre (${GENRES.map(c => c.label).join(", ")}), a console (PS4, Switch, PC) or an audience (${AUDIENCE.options.map(o => o.label).join(", ")})`;
@@ -943,7 +1032,14 @@ function render(keepScroll) {
     crumbs.push([`Search: "${q}"`, resultsRoute]);
     if (game) {
       crumbs.push([game.name, null]);
-      html = gamePage(game, crumbs, "Search", backButton("Back to search results", resultsRoute));
+      const results = sortGames(applyFilters(search(q).results, SEARCH_FILTERS, active, r => r.game), sort, r => r.game)
+        .map(r => r.game);
+      const routeFor = g => results.includes(g) ? searchRoute(q, g.id, active, sort) : ownRoute(g);
+      const like = moreLikeThis(game);
+      html = gamePage(game, crumbs, "Search", backButton("Back to search results", resultsRoute),
+        rail("like-title", "More like this", "", like, routeFor) +
+        rail("more-title", `More results for "${q}"`, filteredTo(SEARCH_FILTERS, active), restOf(results, game, like),
+          routeFor, resultsRoute));
     } else {
       html = searchResults(q, active, sort);
     }
@@ -967,7 +1063,12 @@ function render(keepScroll) {
 
     if (game) {
       crumbs.push([game.name, null]);
-      html = gamePage(game, crumbs, cat.label, backButton("Back to " + cat.label, listRoute));
+      const routeFor = g => V.inCategory(g, cat.id) ? routeTo(`${view}/${cat.id}/${g.id}`, active, sort) : ownRoute(g);
+      const like = moreLikeThis(game);
+      html = gamePage(game, crumbs, cat.label, backButton("Back to " + cat.label, listRoute),
+        rail("like-title", "More like this", "", like, routeFor) +
+        rail("more-title", `More ${cat.label} games`, filteredTo(V.filters, active),
+          restOf(sortGames(gamesIn(view, cat.id, active), sort), game, like), routeFor, listRoute));
     } else {
       const list = sortGames(gamesIn(view, cat.id, active), sort);
       html = `${pageHead(V.label, cat.label, plural(list.length))}
@@ -989,8 +1090,27 @@ function render(keepScroll) {
   searchInput.value = parts[0] === "search" ? q : "";
   updateSearchButton();
   closeSuggestions();
-  if (!keepScroll) window.scrollTo(0, 0);
+  updateRails();
+  // Only filter and sort changes pass true; a new page (hashchange passes its event) starts at the top.
+  if (keepScroll !== true) window.scrollTo(0, 0);
 }
+
+/* Rows of related games: the arrows scroll a row by its width and hide at either end. */
+function updateRails() {
+  document.querySelectorAll(".rail").forEach(r => {
+    const track = r.querySelector(".rail-track");
+    r.querySelector(".prev").disabled = track.scrollLeft <= 1;
+    r.querySelector(".next").disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 1;
+  });
+}
+document.addEventListener("click", e => {
+  const arrow = e.target.closest(".rail-arrow");
+  if (!arrow) return;
+  const track = arrow.parentElement.querySelector(".rail-track");
+  track.scrollBy({ left: (arrow.classList.contains("next") ? 1 : -1) * track.clientWidth, behavior: "smooth" });
+});
+document.addEventListener("scroll", e => { if (e.target.classList && e.target.classList.contains("rail-track")) updateRails(); }, true);
+window.addEventListener("resize", updateRails);
 
 /* One listener handles every navigation or filter click. data-log is the
    label the tree test records (tree-test.js). Filter changes replace the

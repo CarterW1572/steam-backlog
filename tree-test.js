@@ -47,6 +47,9 @@
   // search box. Set to true to let them search (a game picked from the
   // suggestions or the results page still ends the task).
   const SEARCH_IN_TEST = false;
+  // For the same reason, game pages don't show the "More like this" and "More ...
+  // games" rows, which jump between games. Set to true to show them.
+  const RELATED_IN_TEST = false;
 
   const KEY = "video-game-finder-tree-test";
   const TAB_KEY = "video-game-finder-tree-test-tab";
@@ -342,6 +345,7 @@
   function showUI() {
     clearUI();
     if (!SEARCH_IN_TEST) document.getElementById("search").hidden = true;
+    if (!RELATED_IN_TEST) document.body.classList.add("no-related");
     if (!session) {
       if (tab && tab.pending) showReady();
       else if (tab && tab.thanks) showThanks();
