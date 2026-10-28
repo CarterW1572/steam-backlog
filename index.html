@@ -41,6 +41,14 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font: 16px/1.5 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  /* Browsing pages (home, categories, search results; not game pages): a soft band of purple
+     light across the page that fades in below the header, peaks behind the page's heading
+     and fades out before the cards, so it has no edge to meet the header (whose bottom rule
+     is dropped here too). On the page background, so it spans the window without making it
+     scroll sideways. */
+  body.browsing { background-image: linear-gradient(transparent 40px, hsl(265 70% 45% / 0.16) 160px, transparent 400px);
+    background-repeat: no-repeat; }
+  body.browsing .site-header { border-bottom-color: transparent; }
   button, input, select { font: inherit; color: inherit; }
   button { background: none; border: 0; cursor: pointer; text-align: left; }
   :focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
@@ -112,12 +120,14 @@
   .cat-card .card-title { align-self: flex-start; padding: 5px 12px; border-radius: 8px;
     background: rgb(14 14 17 / 0.85); color: var(--soft); font-size: 16px; font-weight: 700;
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.4); }
-  .cat-card .card-meta { padding: 2px 10px; border-radius: 999px; background: rgb(14 14 17 / 0.75); color: var(--text); }
+  .cat-card .card-meta, .cat-card .card-arrow { padding: 2px 10px; border-radius: 999px; background: rgb(14 14 17 / 0.75); color: var(--text); }
+  .cat-card .card-arrow { font-size: 16px; line-height: 22px; }
   .card-foot { display: flex; align-items: center; justify-content: space-between; }
-  /* Category art: a tilted collage of covers from the category, blurred and dim until
-     the card is hovered or focused, then sharp. The dark wash keeps the label readable. */
+  /* Category art: a tilted collage of covers from the category, slightly soft until the
+     card is hovered or focused, then sharp. It's kept bright, since it's most of the home
+     page's color; the dark wash and the labels' solid backs keep the text readable. */
   .cat-art { position: absolute; inset: -20%; z-index: -1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
-    transform: rotate(-8deg); filter: blur(5px) brightness(0.75) saturate(0.9);
+    transform: rotate(-8deg); filter: blur(2px) brightness(0.9);
     transition: filter 0.3s, transform 0.3s; }
   .cat-art img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; background: var(--base); }
   .cat-card::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
@@ -300,6 +310,7 @@
   /* Tree test screens (index.html?test and ?results) keep the plain wireframe
      look: black on white, Arial, square boxes.                                */
   .tt-plain { background: #fff; max-width: 900px; margin: 0 auto; padding: 16px; }
+  body.tt-plain { background-image: none; } /* no glow from the browsing pages */
   .tt-plain .container { padding: 0; }
   .tt-plain, .tt-plain *, .tt-modal, .tt-modal *, .tt-bar, .tt-bar * { font: 16px/1.4 Arial, sans-serif; color: #000; }
   .tt-plain button, .tt-modal button, .tt-bar button { background: #fff; border: 1px solid #000; border-radius: 0;
@@ -1069,6 +1080,7 @@ function render(keepScroll) {
   const main = document.getElementById("main");
   const crumbs = [["Home", "#/"]];
   let html = "";
+  let onGamePage = false;
 
   const [, catId, gameId] = parts;
   const cat = view && catId && byId(VIEWS[view].categories, catId);
@@ -1083,6 +1095,7 @@ function render(keepScroll) {
         .map(r => r.game);
       const routeFor = g => results.includes(g) ? searchRoute(q, g.id, active, sort) : ownRoute(g);
       const like = moreLikeThis(game);
+      onGamePage = true;
       html = gamePage(game, crumbs, "Search", backButton("Back to search results", resultsRoute),
         rail("like-title", "More like this", "", like, routeFor) +
         rail("more-title", `More results for "${q}"`, filteredTo(SEARCH_FILTERS, active), restOf(results, game, like),
@@ -1111,6 +1124,7 @@ function render(keepScroll) {
       crumbs.push([game.name, null]);
       const routeFor = g => V.inCategory(g, cat.id) ? routeTo(`${view}/${cat.id}/${g.id}`, active, sort) : ownRoute(g);
       const like = moreLikeThis(game);
+      onGamePage = true;
       html = gamePage(game, crumbs, cat.label, backButton("Back to " + cat.label, listRoute),
         rail("like-title", "More like this", "", like, routeFor) +
         rail("more-title", `More ${cat.label} games`, filteredTo(V.filters, active),
@@ -1125,6 +1139,8 @@ function render(keepScroll) {
   }
 
   main.innerHTML = html;
+  // The glow at the top marks the browsing pages: home, categories and search results.
+  document.body.classList.toggle("browsing", !onGamePage);
   const sep = `<span class="sep" aria-hidden="true">›</span>`;
   // Breadcrumbs start once the user leaves the home page; "Home" alone says nothing.
   const crumbNav = document.getElementById("crumbs");
