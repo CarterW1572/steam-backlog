@@ -178,7 +178,17 @@
   fieldset + fieldset { margin-top: 20px; }
   legend { margin-bottom: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   fieldset label { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 15px; cursor: pointer; }
-  fieldset input { flex: none; width: 18px; height: 18px; accent-color: var(--base); cursor: pointer; }
+  /* Checkboxes drawn in the theme: a dark box with a purple-gray outline (3:1 against the
+     panel, so it still reads as a box), filled purple with a white tick when checked. The
+     browser's own white boxes drew the eye away from the games. */
+  fieldset input { flex: none; display: grid; place-items: center; width: 18px; height: 18px; margin: 0;
+    appearance: none; border: 1.5px solid hsl(265 25% 55%); border-radius: 5px; background: var(--bg);
+    cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+  fieldset input::after { content: ""; width: 9px; height: 5px; margin-top: -2px; border: solid var(--text);
+    border-width: 0 0 2px 2px; transform: rotate(-45deg); opacity: 0; }
+  fieldset input:checked { border-color: var(--base); background: var(--base); }
+  fieldset input:checked::after { opacity: 1; }
+  fieldset label:not(.none):hover input { border-color: var(--tint); }
   fieldset .count { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
   fieldset label.none { opacity: 0.4; cursor: default; }
   fieldset label.none input { cursor: default; }
