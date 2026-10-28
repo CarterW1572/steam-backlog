@@ -26,6 +26,16 @@
     --soft:   hsl(265 15% 80%); /* a softer, slightly purple white for large home-page headings */
     --muted:  #a3a3ab;
     --on-accent: #17130a;
+    /* Depth: boxes look lit from above, with a faint purple edge that's brighter along
+       the top, and cast a soft shadow onto the page. Hovering a card deepens it. */
+    --edge:       hsl(265 30% 30%);
+    --edge-top:   hsl(265 40% 42%);
+    --lift:       0 10px 28px rgb(0 0 0 / 0.7), 0 2px 6px rgb(0 0 0 / 0.6);
+    --lift-hover: 0 18px 40px rgb(0 0 0 / 0.75), 0 4px 10px rgb(0 0 0 / 0.6);
+    /* The same for controls (search, sort, buttons), scaled down to their size. */
+    --lift-sm:       0 4px 12px rgb(0 0 0 / 0.6), 0 1px 3px rgb(0 0 0 / 0.5);
+    --lift-sm-hover: 0 8px 20px rgb(0 0 0 / 0.7), 0 2px 5px rgb(0 0 0 / 0.55);
+    --shine:      inset 0 1px 0 rgb(255 255 255 / 0.35); /* light top edge on a filled button */
     --radius: 16px;
     --gutter: 24px;
   }
@@ -50,14 +60,16 @@
 
   /* Search box with suggestions under it */
   .search { position: relative; display: flex; gap: 8px; flex: 1 1 320px; max-width: 520px; margin-left: auto; }
-  .search input { flex: 1; width: 0; min-width: 0; height: 44px; padding: 0 20px; border-radius: 999px; border: 1px solid transparent;
-    background: var(--shade); }
+  .search input { flex: 1; width: 0; min-width: 0; height: 44px; padding: 0 20px; border-radius: 999px;
+    border: 1px solid var(--edge); border-top-color: var(--edge-top); background: var(--shade); box-shadow: var(--lift-sm); }
   .search input::placeholder { color: var(--muted); }
   .search input:focus { outline: none; border-color: var(--base); }
-  #search-go { height: 44px; padding: 0 22px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 700; }
-  #search-go:hover { filter: brightness(1.08); }
+  #search-go { height: 44px; padding: 0 22px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 700;
+    box-shadow: var(--shine), var(--lift-sm); transition: filter 0.15s, box-shadow 0.15s, transform 0.15s; }
+  #search-go:hover { filter: brightness(1.08); box-shadow: var(--shine), var(--lift-sm-hover); transform: translateY(-1px); }
   .search ul { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 5; list-style: none; padding: 8px;
-    border: 1px solid var(--line); border-radius: var(--radius); background: var(--shade); box-shadow: 0 16px 40px rgb(0 0 0 / 0.5); }
+    border: 1px solid var(--edge); border-top-color: var(--edge-top); border-radius: var(--radius); background: var(--shade);
+    box-shadow: var(--lift-hover); }
   .search li { padding: 10px 14px; border-radius: 10px; cursor: pointer; }
   .search li:hover, .search li[aria-selected="true"] { background: var(--base); }
   .search li.see-all { color: var(--tint); font-weight: 500; }
@@ -84,9 +96,10 @@
   .notice { margin: -16px 0 24px; color: var(--muted); }
 
   /* Cards: every card is the same rounded shape on the same dark purple ground. */
-  .card { display: flex; flex-direction: column; width: 100%; border: 1px solid transparent; border-radius: var(--radius);
-    background: var(--shade); transition: transform 0.15s, border-color 0.15s; }
-  .card:hover { border-color: var(--base); transform: translateY(-2px); }
+  .card { display: flex; flex-direction: column; width: 100%; border: 1px solid var(--edge); border-top-color: var(--edge-top);
+    border-radius: var(--radius); background: var(--shade); box-shadow: var(--lift);
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; }
+  .card:hover { border-color: var(--base); box-shadow: var(--lift-hover); transform: translateY(-2px); }
   .card-title { font-size: 18px; font-weight: 600; line-height: 1.3; }
   .card-meta { font-size: 14px; color: var(--muted); }
 
@@ -133,7 +146,8 @@
 
   /* Category page: filters on the left, games on the right. */
   .layout { display: grid; grid-template-columns: 240px 1fr; gap: 32px; align-items: start; }
-  .panel { padding: 20px; border-radius: var(--radius); background: var(--shade); }
+  .panel { padding: 20px; border: 1px solid var(--edge); border-top-color: var(--edge-top); border-radius: var(--radius);
+    background: var(--shade); box-shadow: var(--lift); }
   .panel-title { margin-bottom: 16px; font-size: 16px; font-weight: 700; }
   /* The panel stays in view while the games scroll; when it's taller than the window it
      scrolls on its own, with a thin purple scrollbar instead of the system one. */
@@ -160,13 +174,15 @@
   .list-head { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-start; gap: 12px 24px; margin-bottom: 16px; }
   .sort-menu { position: relative; flex: none; width: 240px; max-width: 100%; }
   .sort-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; height: 44px; padding: 0 16px;
-    border: 1px solid var(--line); border-radius: 12px; background: var(--shade); font-size: 15px; font-weight: 600; }
-  .sort-toggle:hover, .sort-toggle[aria-expanded="true"] { border-color: var(--base); }
+    border: 1px solid var(--edge); border-top-color: var(--edge-top); border-radius: 12px; background: var(--shade);
+    font-size: 15px; font-weight: 600; box-shadow: var(--lift-sm); transition: border-color 0.15s, box-shadow 0.15s; }
+  .sort-toggle:hover, .sort-toggle[aria-expanded="true"] { border-color: var(--base); box-shadow: var(--lift-sm-hover); }
   .sort-current { font-weight: 400; color: var(--muted); }
   .caret { transition: transform 0.15s; }
   .sort-toggle[aria-expanded="true"] .caret { transform: rotate(180deg); }
   .sort-list { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 10; list-style: none; overflow: hidden;
-    border: 1px solid var(--line); border-radius: 12px; background: var(--shade); box-shadow: 0 16px 40px rgb(0 0 0 / 0.5); }
+    border: 1px solid var(--edge); border-top-color: var(--edge-top); border-radius: 12px; background: var(--shade);
+    box-shadow: var(--lift-hover); }
   .sort-list li + li { border-top: 1px solid var(--line); }
   .sort-list button { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; width: 100%; padding: 11px 16px; font-size: 15px; }
   .sort-list button:hover, .sort-list button:focus-visible { background: var(--base); outline: none; }
@@ -208,7 +224,7 @@
   .facts { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; font-size: 15px; }
   .facts dt { color: var(--muted); }
   .facts dd { font-weight: 500; }
-  .cover-large { border-radius: var(--radius); font-size: 64px; }
+  .cover-large { border-radius: var(--radius); font-size: 64px; box-shadow: var(--lift); }
   .platforms { list-style: none; }
   .platforms li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 10px 0;
     border-top: 1px solid var(--line); }
@@ -224,8 +240,9 @@
   .tag-link { transition: border-color 0.15s, background 0.15s; }
   .tag-link:hover { border-color: var(--base); background: var(--base); color: var(--text); }
   .via { margin-top: 24px; font-size: 14px; color: var(--muted); }
-  .btn-secondary { padding: 10px 20px; border: 1px solid var(--base); border-radius: 999px; font-weight: 600; }
-  .btn-secondary:hover { background: var(--base); }
+  .btn-secondary { padding: 10px 20px; border: 1px solid var(--base); border-top-color: hsl(265 80% 72%); border-radius: 999px;
+    background: var(--shade); font-weight: 600; box-shadow: var(--lift-sm); transition: background 0.15s, box-shadow 0.15s, transform 0.15s; }
+  .btn-secondary:hover { background: var(--base); box-shadow: var(--shine), var(--lift-sm-hover); transform: translateY(-1px); }
 
   /* Related games under a game page: rows of small cards that scroll sideways, four at a
      time, with round arrows over the ends. The tree test hides them (tree-test.js).     */
@@ -237,8 +254,12 @@
   .related-head .btn-secondary { flex: none; padding: 6px 16px; font-size: 14px; }
   .related-sub { margin-top: 2px; font-size: 14px; color: var(--muted); }
   .rail { position: relative; }
+  /* A scrolling row clips whatever pokes out of it, so the track reaches past the cards on
+     every side (padding, cancelled by a negative margin) to leave room for their shadows. */
+  .rail { --bleed: var(--gutter); }
   .rail-track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 3 * 16px) / 4); gap: 16px;
-    padding: 4px 0 8px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    margin: -8px calc(-1 * var(--bleed)) -40px; padding: 8px var(--bleed) 40px; scroll-padding-inline: var(--bleed);
+    overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .rail-track::-webkit-scrollbar { display: none; }
   .mini-card { overflow: hidden; scroll-snap-align: start; }
   .mini-body { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 12px 14px 14px; }
