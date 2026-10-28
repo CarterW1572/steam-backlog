@@ -176,7 +176,14 @@
   .sort-list button:hover .hint, .sort-list button:focus-visible .hint { color: var(--text); }
   fieldset { border: none; }
   fieldset + fieldset { margin-top: 20px; }
-  legend { margin-bottom: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  legend { width: 100%; margin-bottom: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  /* Each group's heading is a button that folds the group away; the caret points down when open. */
+  .group-toggle { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; padding: 2px 0;
+    letter-spacing: inherit; text-transform: inherit; }
+  .group-toggle:hover { color: var(--text); }
+  .group-toggle .caret { font-size: 14px; }
+  .group-toggle[aria-expanded="false"] .caret { transform: rotate(-90deg); }
+  .group-checked { color: var(--tint); }
   fieldset label { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 15px; cursor: pointer; }
   /* Checkboxes drawn in the theme: a dark box with a purple-gray outline (3:1 against the
      panel, so it still reads as a box), filled purple with a white tick when checked. The
@@ -255,7 +262,7 @@
     .layout { grid-template-columns: 1fr; }
     .filters { position: static; max-height: none; }
     /* Two columns of checkboxes, so the filters don't push the games far down. */
-    .filters fieldset { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+    .filters .group-options { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
   }
   @media (max-width: 600px) {
     :root { --gutter: 16px; }
@@ -837,18 +844,27 @@ function gameCard(game, route, note) {
 // shows how many games checking it would leave, given the other groups' filters
 // (within a group, checking another option adds games). Options no game in the
 // list has are left out; ones the other filters rule out are greyed.
+// Each group's heading opens and closes it, so the user can fold away groups they
+// don't need. All start open; closed ones stay closed while the panel redraws.
+const closedGroups = new Set();
 function filterPanel(groups, active, sort, all, key) {
   const fieldsets = groups.map(group => {
     const others = applyFilters(all, groups.filter(x => x !== group), active, key);
     const options = group.options.filter(o => active.has(o.id) || all.some(x => o.test(key(x))));
     if (!options.length) return "";
-    return `<fieldset><legend>${group.label}<span class="rule"> · any of</span></legend>
+    const open = !closedGroups.has(group.label);
+    const checked = options.filter(o => active.has(o.id)).length;
+    return `<fieldset><legend><button type="button" class="group-toggle" data-group="${esc(group.label)}" aria-expanded="${open}">
+      <span>${group.label}<span class="rule"> · any of</span>${checked ? `<span class="group-checked"> (${checked})</span>` : ""}</span>
+      <span class="caret" aria-hidden="true">▾</span></button></legend>
+    <div class="group-options"${open ? "" : " hidden"}>
     ${options.map(o => {
       const n = others.filter(x => o.test(key(x))).length;
       const off = !n && !active.has(o.id);
       return `<label${off ? ' class="none"' : ""}><input type="checkbox" data-log="Filter: ${esc(o.label)}" data-type="filter"
       data-filter="${o.id}"${active.has(o.id) ? " checked" : ""}${off ? " disabled" : ""}> ${esc(o.label)}<span class="count">${n}</span></label>`;
     }).join("")}
+    </div>
     </fieldset>`;
   }).join("");
   const anyOn = groups.some(group => group.options.some(o => active.has(o.id)));
@@ -1145,6 +1161,16 @@ document.addEventListener("click", e => {
     return;
   }
   location.hash = el.dataset.route;
+});
+
+/* A filter group's heading opens or closes it in place, so the panel keeps its scroll position. */
+document.addEventListener("click", e => {
+  const toggle = e.target.closest(".group-toggle");
+  if (!toggle) return;
+  const open = toggle.getAttribute("aria-expanded") !== "true";
+  open ? closedGroups.delete(toggle.dataset.group) : closedGroups.add(toggle.dataset.group);
+  toggle.setAttribute("aria-expanded", open);
+  toggle.closest("fieldset").querySelector(".group-options").hidden = !open;
 });
 
 /* Sort menu: the button opens and closes the list; clicking outside it or
